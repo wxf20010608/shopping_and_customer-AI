@@ -427,7 +427,55 @@ docker compose logs backend
 docker compose logs web
 ```
 
-**问题 3：数据库文件权限问题（Linux/Mac）**
+**问题 3：Docker 构建失败 - 网络连接问题**
+
+如果构建时出现 `Unable to connect to deb.debian.org` 错误，可能是网络问题：
+
+**解决方案 1：使用国内镜像源（已内置，推荐）**
+
+Dockerfile 已自动配置阿里云镜像源，如果仍然失败，可以手动检查：
+
+```dockerfile
+# backend/Dockerfile 中已包含以下配置
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
+```
+
+**解决方案 2：重试构建**
+
+网络问题可能是临时的，可以重试：
+
+```bash
+# 清理构建缓存后重试
+docker compose build --no-cache backend
+```
+
+**解决方案 3：使用代理**
+
+如果有代理，可以在 `docker-compose.yml` 中配置：
+
+```yaml
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        http_proxy: http://your-proxy:port
+        https_proxy: http://your-proxy:port
+```
+
+**解决方案 4：手动修改镜像源**
+
+如果自动配置失败，可以手动编辑 Dockerfile：
+
+```dockerfile
+# 在 RUN apt-get update 之前添加
+RUN echo "deb http://mirrors.aliyun.com/debian/ bookworm main" > /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian-security/ bookworm-security main" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian/ bookworm-updates main" >> /etc/apt/sources.list
+```
+
+**问题 4：数据库文件权限问题（Linux/Mac）**
 
 确保文件权限正确：
 
@@ -436,7 +484,7 @@ chmod 644 backend/smart_mall.db
 chmod -R 755 backend/app/static/uploads/
 ```
 
-**问题 4：需要清理所有数据重新开始**
+**问题 5：需要清理所有数据重新开始**
 
 ```bash
 # 停止并删除容器、网络、数据卷
