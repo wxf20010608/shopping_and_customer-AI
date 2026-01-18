@@ -140,3 +140,4 @@ Traceback (most recent call last):
     version = _bcrypt.__about__.__version__
               ^^^^^^^^^^^^^^^^^
 AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-01-18 19:23:04 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
