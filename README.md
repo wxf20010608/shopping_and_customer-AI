@@ -4,7 +4,7 @@
 
 ## 项目简介
 
-智慧商城是一个基于 FastAPI 和 Vue 3 开发的现代化电商平台，支持用户注册登录、商品浏览购买、订单管理、会员系统、优惠券、客服聊天等功能。
+智慧商城是一个基于 FastAPI 和 Vue 3 开发的现代化电商平台，支持用户注册登录、商品浏览购买、订单管理、会员系统、优惠券、客服聊天、商品评价和评分系统、商品库存预警、数据统计和分析功能、单元测试和集成测试、优惠券自动发放机制以及Redis 缓存优化性能等功能。
 
 ## 技术栈
 
@@ -86,17 +86,20 @@
 - ✅ **系统统计概览**（订单、用户、商品、评价、优惠券统计）
 - ✅ **数据统计和分析**：
   - 仪表板统计（订单、用户、商品、评价、优惠券）
-  - 销售统计（按日期统计订单和销售额）
+  - 销售统计（按日期统计订单和销售额，支持自定义天数）
   - 商品统计（最畅销商品、按分类统计）
-  - 用户统计（注册趋势、活跃用户）
+  - 用户统计（注册趋势、活跃用户、月度注册数据）
 - ✅ **商品库存预警**：
-  - 低库存商品检查（可配置预警阈值）
+  - 低库存商品检查（可配置预警阈值，实时更新统计）
   - 预警级别（缺货、高预警、中预警、低预警）
-  - 库存统计（总商品数、低库存数、缺货数）
+  - 库存统计（总商品数、低库存数、缺货数，随阈值动态更新）
 - ✅ 用户管理（查看、创建、更新、删除）
 - ✅ 商品类别管理
 - ✅ 商品管理（查看、创建、更新、删除）
 - ✅ **商品评价管理**（查看、审核、删除评价）
+  - 支持按商品ID筛选
+  - 支持按状态筛选（待审核、已通过、已拒绝）
+  - 分页浏览评价列表
 - ✅ 订单管理（查看订单详情、更新订单状态）
 - ✅ 客服聊天记录管理
 - ✅ 优惠券管理
@@ -104,6 +107,7 @@
 - ✅ **知识库管理**（RAG 知识库文档管理）
   - 文档创建、更新、删除
   - 支持多种格式导入（PDF、Word、Excel、文本、图片 OCR、网页 URL、数据库表）
+  - 文档筛选（按分类、状态筛选）
   - 向量索引管理（自动向量化、索引重建）
   - 知识库搜索测试（混合检索：向量 + BM25）
 
@@ -126,6 +130,7 @@ Shopping_app/
 │   │   │   ├── chat_models.py
 │   │   │   ├── knowledge_base_models.py
 │   │   │   ├── category_models.py
+│   │   │   ├── review_models.py
 │   │   │   ├── shipping_models.py
 │   │   │   └── timestamp_models.py
 │   │   ├── routers/           # API 路由
@@ -138,7 +143,8 @@ Shopping_app/
 │   │   │   ├── memberships_route.py
 │   │   │   ├── coupons_route.py
 │   │   │   ├── customer_service_route.py
-│   │   │   └── knowledge_base_route.py
+│   │   │   ├── knowledge_base_route.py
+│   │   │   └── reviews_route.py
 │   │   ├── services/          # 业务逻辑层
 │   │   │   ├── user_service.py
 │   │   │   ├── product_service.py
@@ -147,18 +153,43 @@ Shopping_app/
 │   │   │   ├── address_service.py
 │   │   │   ├── membership_service.py
 │   │   │   ├── coupon_service.py
+│   │   │   ├── coupon_auto_issue_service.py
 │   │   │   ├── customer_service.py
 │   │   │   ├── logistics_service.py
 │   │   │   ├── rag_service.py
 │   │   │   ├── document_parser.py
-│   │   │   └── text_cleaner.py
+│   │   │   ├── text_cleaner.py
+│   │   │   ├── review_service.py
+│   │   │   ├── statistics_service.py
+│   │   │   ├── stock_alert_service.py
+│   │   │   ├── cache_service.py
+│   │   │   ├── log_service.py
+│   │   │   └── logging_config.py
 │   │   ├── repositories/      # 数据访问层
+│   │   │   ├── user_repository.py
+│   │   │   ├── product_repository.py
+│   │   │   ├── cart_repository.py
+│   │   │   ├── order_repository.py
+│   │   │   ├── address_repository.py
+│   │   │   └── logistics_repository.py
 │   │   ├── static/            # 静态文件（上传的图片、文件等）
+│   │   │   └── uploads/       # 上传文件目录
+│   │   ├── utils/             # 工具函数目录
 │   │   ├── database.py        # 数据库配置
 │   │   ├── main.py            # FastAPI 应用入口
 │   │   ├── admin_router.py    # 管理员路由
-│   │   └── schemas.py         # Pydantic 数据模式
+│   │   ├── schemas.py         # Pydantic 数据模式
+│   │   └── utils.py           # 工具函数
+│   ├── logs/                  # 日志文件目录
+│   │   ├── app.log            # 应用日志
+│   │   └── error.log          # 错误日志
+│   ├── tests/                 # 测试文件
+│   │   ├── conftest.py        # pytest 配置
+│   │   ├── test_products.py   # 商品服务测试
+│   │   ├── test_users.py      # 用户服务测试
+│   │   └── test_integration.py # 集成测试
 │   ├── requirements.txt       # Python 依赖
+│   ├── pytest.ini            # pytest 配置
 │   ├── smart_mall.db         # SQLite 数据库文件
 │   ├── knowledge_base_index.faiss  # FAISS 向量索引文件
 │   ├── Dockerfile            # 后端 Docker 镜像配置
@@ -170,20 +201,46 @@ Shopping_app/
 └── frontend/                   # 前端代码
     ├── src/
     │   ├── api/               # API 接口封装
+    │   │   └── index.js       # API 方法定义
     │   ├── components/        # Vue 组件
     │   ├── views/             # 页面视图
     │   │   ├── auth/          # 认证相关页面
+    │   │   │   ├── LoginView.vue
+    │   │   │   └── RegisterView.vue
     │   │   ├── products/      # 商品相关页面
+    │   │   │   ├── ProductList.vue
+    │   │   │   └── ProductDetail.vue
     │   │   ├── cart/          # 购物车页面
+    │   │   │   └── CartView.vue
     │   │   ├── orders/        # 订单相关页面
+    │   │   │   ├── OrdersView.vue
+    │   │   │   ├── OrderDetail.vue
+    │   │   │   └── OrderLogistics.vue
     │   │   ├── profile/       # 个人中心页面
+    │   │   │   ├── ProfileView.vue
+    │   │   │   ├── ProfileEditView.vue
+    │   │   │   ├── AddressBookView.vue
+    │   │   │   ├── MembershipView.vue
+    │   │   │   ├── MembershipDetailView.vue
+    │   │   │   ├── MembershipPurchaseView.vue
+    │   │   │   └── MyReviewsView.vue
     │   │   ├── wishlist/      # 心愿单页面
+    │   │   │   └── WishlistView.vue
     │   │   ├── chat/          # 客服聊天页面
+    │   │   │   └── ChatView.vue
     │   │   └── admin/         # 管理员页面
+    │   │       └── AdminDashboard.vue
     │   ├── stores/            # Pinia 状态管理
+    │   │   ├── user.js
+    │   │   └── wishlist.js
     │   ├── router/            # 路由配置
+    │   │   └── index.js
     │   ├── App.vue            # 根组件
-    │   └── main.js            # 入口文件
+    │   ├── main.js            # 入口文件
+    │   └── styles.css         # 全局样式
+    ├── public/                # 静态资源
+    │   └── pcas.json          # 中国行政区划数据
+    ├── dist/                  # 构建产物
     ├── package.json           # Node.js 依赖
     ├── vite.config.js         # Vite 配置
     ├── Dockerfile            # 前端 Docker 镜像配置
@@ -648,6 +705,9 @@ cp backend/smart_mall.db backend/smart_mall_backup_$(date +%Y%m%d_%H%M%S).db
   - 图片 OCR：自动提取图片中的文字
   - 网页导入：从 URL 提取网页内容
   - 数据库导入：从数据库表提取数据
+- **文档筛选**：
+  - 按分类筛选文档
+  - 按状态筛选（有效/无效/全部）
 - **向量化存储**：使用 FAISS 存储文档向量，支持快速相似度检索
 - **混合检索**：
   - 向量检索（语义相似度）
@@ -677,14 +737,19 @@ cp backend/smart_mall.db backend/smart_mall_backup_$(date +%Y%m%d_%H%M%S).db
   export ADMIN_PASSWORD=your_admin_password
   ```
 - 管理员功能包括：
-  - 系统统计概览
+  - **系统统计概览**（仪表板数据、销售统计、商品统计、用户统计）
+  - **商品库存预警**（低库存商品列表、库存统计、可配置预警阈值）
+  - **商品评价管理**（查看、筛选、删除评价，支持按商品ID和状态筛选）
   - 用户管理（查看、创建、更新、删除用户）
   - 商品类别管理
   - 商品管理（查看、创建、更新、删除商品）
   - 订单管理（查看订单详情、更新订单状态）
   - 客服聊天记录管理
-  - 优惠券管理
+  - 优惠券管理（包括自动发放规则配置）
   - 会员管理
+  - **知识库管理**（文档管理、多格式导入、状态筛选）
+  - **缓存管理**（Redis 缓存状态查看、清空缓存）
+  - **日志查看**（查看应用日志、错误日志）
 
 ## 开发注意事项
 
@@ -787,16 +852,16 @@ STOCK_ALERT_THRESHOLD=10                      # 库存预警阈值（默认：10
 ## 后续开发建议
 
 - [ ] 添加支付集成（支付宝、微信支付等）
-- [x] 实现商品评价和评分系统（评价、评分、图片上传、购买验证）
+- [X] 实现商品评价和评分系统（评价、评分、图片上传、购买验证）
 - [ ] 添加商品推荐算法
 - [ ] 实现邮件通知功能
-- [x] 添加商品库存预警（支持阈值配置和定时检查）
-- [x] 实现优惠券自动发放机制（新用户注册、首次购买等）
-- [x] 添加数据统计和分析功能（仪表板、销售统计、商品统计、用户统计）
-- [x] 实现 Redis 缓存优化性能（商品列表、商品详情、分类等）
-- [x] 添加单元测试和集成测试（pytest框架，覆盖商品、用户等服务）
-- [x] 实现 Docker 容器化部署（含 Nginx 反向代理）
-- [x] 实现商品评价和评分系统（评价、评分、图片上传、购买验证）
+- [X] 添加商品库存预警（支持阈值配置和定时检查）
+- [X] 实现优惠券自动发放机制（新用户注册、首次购买等）
+- [X] 添加数据统计和分析功能（仪表板、销售统计、商品统计、用户统计）
+- [X] 实现 Redis 缓存优化性能（商品列表、商品详情、分类等）
+- [X] 添加单元测试和集成测试（pytest框架，覆盖商品、用户等服务）
+- [X] 实现 Docker 容器化部署（含 Nginx 反向代理）
+- [X] 实现商品评价和评分系统（评价、评分、图片上传、购买验证）
 
 ## 测试
 
