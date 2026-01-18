@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .order_models import Order
     from .address_models import Address
     from .review_models import Review
+    from .membership_models import Membership
 
 
 class User(Base, TimestampMixin):

@@ -20,7 +20,7 @@ export default defineConfig({
       "/adminapi": {
         target: "http://127.0.0.1:8000",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/adminapi/, ""),
+        rewrite: (path) => path.replace(/^\/adminapi/, "/admin"),
       },
       "/static": {
         target: "http://127.0.0.1:8000",

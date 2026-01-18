@@ -11,6 +11,7 @@
         <router-link class="btn" to="/profile/edit">编辑资料</router-link>
         <router-link class="btn" to="/profile/address">管理地址簿</router-link>
         <router-link class="btn" to="/profile/membership">会员中心</router-link>
+        <router-link class="btn" to="/profile/reviews">我的评价</router-link>
         <button class="btn danger" @click="doLogout">退出登录</button>
         <button class="btn danger" @click="doDelete">注销账号</button>
       </div>

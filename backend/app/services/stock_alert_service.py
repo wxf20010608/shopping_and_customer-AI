@@ -58,11 +58,13 @@ class StockAlertService:
         else:
             return "low"  # 低预警
     
-    def get_stock_statistics(self, db: Session) -> Dict:
+    def get_stock_statistics(self, db: Session, threshold: Optional[int] = None) -> Dict:
         """获取库存统计"""
+        alert_threshold = threshold or self.alert_threshold
+        
         total_products = db.query(func.count(Product.id)).scalar()
         low_stock_count = db.query(func.count(Product.id)).filter(
-            Product.stock <= self.alert_threshold
+            Product.stock <= alert_threshold
         ).scalar()
         out_of_stock_count = db.query(func.count(Product.id)).filter(
             Product.stock == 0
@@ -75,7 +77,7 @@ class StockAlertService:
             "low_stock_count": low_stock_count,
             "out_of_stock_count": out_of_stock_count,
             "total_stock": total_stock,
-            "alert_threshold": self.alert_threshold
+            "alert_threshold": alert_threshold
         }
 
 

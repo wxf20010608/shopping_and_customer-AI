@@ -6,10 +6,12 @@ const http = axios.create({
 });
 const adminHttp = axios.create({
   baseURL: "/adminapi",
-  timeout: 8000,
+  timeout: 30000,  // 管理员接口增加到30秒，因为统计查询可能需要更长时间
 });
 
 export const api = {
+  // 导出 adminHttp 以便在组件中访问
+  adminHttp,
   getProducts(search, category, page = 1, pageSize = 10) {
     const params = { page, page_size: pageSize };
     if (search) params.search = search;
@@ -77,6 +79,31 @@ export const api = {
   },
   clearChat(userId, productId){
     return http.delete(`/customer-service/history/${userId}/${productId}`)
+  },
+  // 商品评价
+  createReview(productId, userId, payload) {
+    return http.post(`/reviews/products/${productId}/users/${userId}`, payload);
+  },
+  getProductReviews(productId, status = 'approved', page = 1, pageSize = 10) {
+    return http.get(`/reviews/products/${productId}`, { params: { status, page, page_size: pageSize } });
+  },
+  getProductReviewStats(productId) {
+    return http.get(`/reviews/products/${productId}/stats`);
+  },
+  getReview(reviewId) {
+    return http.get(`/reviews/${reviewId}`);
+  },
+  // 用户自己的评价
+  getUserReviews(userId, status, page = 1, pageSize = 10) {
+    const params = { page, page_size: pageSize };
+    if (status) params.status = status;
+    return http.get(`/reviews/users/${userId}`, { params });
+  },
+  updateReview(reviewId, userId, payload) {
+    return http.put(`/reviews/${reviewId}/users/${userId}`, payload);
+  },
+  deleteReview(reviewId, userId) {
+    return http.delete(`/reviews/${reviewId}/users/${userId}`);
   },
   retractChatMessage(messageId, userId){
     return http.delete(`/customer-service/message/${messageId}`, { params: { user_id: userId }})
@@ -170,63 +197,94 @@ export const api = {
     } catch {}
   },
   adminStatus(){
-    return adminHttp.get(`/admin/status`)
+    return adminHttp.get(`/status`)
   },
   adminListUsers(){
-    return adminHttp.get(`/admin/users`)
+    return adminHttp.get(`/users`)
   },
   adminCreateUser(payload){
-    return adminHttp.post(`/admin/users`, payload)
+    return adminHttp.post(`/users`, payload)
   },
   adminUpdateUser(userId, payload){
-    return adminHttp.put(`/admin/users/${userId}`, payload)
+    return adminHttp.put(`/users/${userId}`, payload)
   },
   adminListCategories(){
-    return adminHttp.get(`/admin/categories`)
+    return adminHttp.get(`/categories`)
   },
   adminCreateCategory(payload){
-    return adminHttp.post(`/admin/categories`, payload)
+    return adminHttp.post(`/categories`, payload)
   },
   adminUpdateCategory(id, payload){
-    return adminHttp.put(`/admin/categories/${id}`, payload)
+    return adminHttp.put(`/categories/${id}`, payload)
   },
   adminDeleteCategory(id){
-    return adminHttp.delete(`/admin/categories/${id}`)
+    return adminHttp.delete(`/categories/${id}`)
   },
   adminListProducts(search, page=1, pageSize=20){
     const params = { search, page, page_size: pageSize }
-    return adminHttp.get(`/admin/products`, { params })
+    return adminHttp.get(`/products`, { params })
   },
   adminCreateProduct(payload){
-    return adminHttp.post(`/admin/products`, payload)
+    return adminHttp.post(`/products`, payload)
   },
   adminUpdateProduct(id, payload){
-    return adminHttp.put(`/admin/products/${id}`, payload)
+    return adminHttp.put(`/products/${id}`, payload)
   },
   adminUploadProductImage(id, file){
     const fd = new FormData()
     fd.append('file', file)
-    return adminHttp.post(`/admin/products/${id}/image`, fd)
+    return adminHttp.post(`/products/${id}/image`, fd)
   },
   adminDeleteProduct(id){
-    return adminHttp.delete(`/admin/products/${id}`)
+    return adminHttp.delete(`/products/${id}`)
   },
   adminBulkCreateProducts(items){
-    return adminHttp.post(`/admin/products/bulk`, items)
+    return adminHttp.post(`/products/bulk`, items)
   },
   adminListOrders(){
-    return adminHttp.get(`/admin/orders`)
+    return adminHttp.get(`/orders`)
   },
   adminUpdateOrderStatus(id, statusValue){
-    return adminHttp.put(`/admin/orders/${id}/status`, null, { params: { status_value: statusValue }})
+    return adminHttp.put(`/orders/${id}/status`, null, { params: { status_value: statusValue }})
   },
   adminUpdateLogistics(orderId, statusValue, tracking){
     const params = { status_value: statusValue }
     if (tracking) params.tracking_number = tracking
-    return adminHttp.put(`/admin/logistics/${orderId}`, null, { params })
+    return adminHttp.put(`/logistics/${orderId}`, null, { params })
   },
   adminStats(){
-    return adminHttp.get(`/admin/stats`)
+    return adminHttp.get(`/stats`)
+  },
+  // 管理员：统计数据
+  adminGetDashboardStats(){
+    return adminHttp.get(`/statistics/dashboard`)
+  },
+  adminGetSalesStatistics(days = 30){
+    return adminHttp.get(`/statistics/sales`, { params: { days } })
+  },
+  adminGetProductStatistics(){
+    return adminHttp.get(`/statistics/products`)
+  },
+  adminGetUserStatistics(){
+    return adminHttp.get(`/statistics/users`)
+  },
+  // 管理员：库存预警
+  adminGetStockAlerts(threshold = 10){
+    return adminHttp.get(`/stock-alerts`, { params: { threshold } })
+  },
+  adminGetStockStatistics(threshold = null){
+    const params = threshold !== null ? { threshold } : {}
+    return adminHttp.get(`/stock-alerts/statistics`, { params })
+  },
+  // 管理员：评价管理
+  adminListReviews(productId, status, page = 1, pageSize = 20){
+    const params = { page, page_size: pageSize }
+    if (productId) params.product_id = productId
+    if (status) params.status = status
+    return adminHttp.get(`/reviews`, { params })
+  },
+  adminDeleteReview(reviewId){
+    return adminHttp.delete(`/reviews/${reviewId}`)
   },
   adminListChats({ userId, productId, role, q, limit }={}){
     const params = {}
@@ -235,73 +293,76 @@ export const api = {
     if (role) params.role = role
     if (q) params.q = q
     if (limit != null) params.limit = limit
-    return adminHttp.get(`/admin/chats`, { params })
+    return adminHttp.get(`/chats`, { params })
   },
   adminDeleteChat(id){
-    return adminHttp.delete(`/admin/chats/${id}`)
+    return adminHttp.delete(`/chats/${id}`)
   },
   adminDeleteConversation(userId, productId){
     const params = { user_id: userId }
     if (productId != null) params.product_id = productId
-    return adminHttp.delete(`/admin/chats/conversation`, { params })
+    return adminHttp.delete(`/chats/conversation`, { params })
   },
   // 管理员：优惠券与会员
   adminListCoupons(){
-    return adminHttp.get(`/admin/coupons`)
+    return adminHttp.get(`/coupons`)
   },
   adminCreateCoupon(payload){
-    return adminHttp.post(`/admin/coupons`, payload)
+    return adminHttp.post(`/coupons`, payload)
   },
   adminUpdateCoupon(id, payload){
-    return adminHttp.put(`/admin/coupons/${id}`, payload)
+    return adminHttp.put(`/coupons/${id}`, payload)
   },
   adminDeleteCoupon(id){
-    return adminHttp.delete(`/admin/coupons/${id}`)
+    return adminHttp.delete(`/coupons/${id}`)
   },
   adminAssignCoupon(couponId, userId){
-    return adminHttp.post(`/admin/coupons/${couponId}/assign/${userId}`)
+    return adminHttp.post(`/coupons/${couponId}/assign/${userId}`)
   },
   adminListMemberships(){
-    return adminHttp.get(`/admin/memberships`)
+    return adminHttp.get(`/memberships`)
   },
   adminListMembershipPlans(){
-    return adminHttp.get(`/admin/membership-plans`)
+    return adminHttp.get(`/membership-plans`)
   },
   adminCreateMembershipPlan(payload){
-    return adminHttp.post(`/admin/membership-plans`, payload)
+    return adminHttp.post(`/membership-plans`, payload)
   },
   adminUpdateMembershipPlan(id, payload){
-    return adminHttp.put(`/admin/membership-plans/${id}`, payload)
+    return adminHttp.put(`/membership-plans/${id}`, payload)
   },
   adminDeleteMembershipPlan(id){
-    return adminHttp.delete(`/admin/membership-plans/${id}`)
+    return adminHttp.delete(`/membership-plans/${id}`)
   },
   adminListMembershipCards(){
-    return adminHttp.get(`/admin/membership-cards`)
+    return adminHttp.get(`/membership-cards`)
   },
   adminCreateMembershipCard(payload){
-    return adminHttp.post(`/admin/membership-cards`, payload)
+    return adminHttp.post(`/membership-cards`, payload)
   },
   adminUpdateMembershipCard(id, payload){
-    return adminHttp.put(`/admin/membership-cards/${id}`, payload)
+    return adminHttp.put(`/membership-cards/${id}`, payload)
   },
   adminDeleteMembershipCard(id){
-    return adminHttp.delete(`/admin/membership-cards/${id}`)
+    return adminHttp.delete(`/membership-cards/${id}`)
   },
   adminCreateMembership(userId, payload){
-    return adminHttp.post(`/admin/memberships/${userId}`, payload)
+    return adminHttp.post(`/memberships/${userId}`, payload)
   },
   adminUpdateMembership(userId, payload){
-    return adminHttp.put(`/admin/memberships/${userId}`, payload)
+    return adminHttp.put(`/memberships/${userId}`, payload)
   },
   adminDeleteMembership(userId){
-    return adminHttp.delete(`/admin/memberships/${userId}`)
+    return adminHttp.delete(`/memberships/${userId}`)
   },
   // 知识库管理
   knowledgeListDocuments(category, active){
     const params = {}
-    if (category) params.category = category
-    if (active !== undefined) params.active = active
+    if (category && category.trim()) params.category = category.trim()
+    // 只有当 active 是明确的布尔值时才传递，undefined/null 不传递（表示全部状态）
+    if (active === true || active === false) {
+      params.active = active
+    }
     return adminHttp.get(`/knowledge-base/documents`, { params })
   },
   knowledgeCreateDocument(payload){
@@ -343,6 +404,48 @@ export const api = {
   },
   knowledgeRebuildIndex(){
     return adminHttp.post(`/knowledge-base/rebuild-index`)
+  },
+  // Redis 缓存管理
+  adminGetCacheStatus(){
+    return adminHttp.get(`/cache/status`)
+  },
+  adminClearCache(){
+    return adminHttp.post(`/cache/clear`)
+  },
+  adminDeleteCachePattern(pattern){
+    return adminHttp.delete(`/cache/${pattern}`)
+  },
+  // 优惠券自动发放规则管理
+  adminGetAutoIssueRules(){
+    return adminHttp.get(`/coupons/auto-issue/rules`)
+  },
+  adminCreateAutoIssueRule(payload){
+    return adminHttp.post(`/coupons/auto-issue/rules`, payload)
+  },
+  adminUpdateAutoIssueRule(ruleId, payload){
+    return adminHttp.put(`/coupons/auto-issue/rules/${ruleId}`, payload)
+  },
+  adminDeleteAutoIssueRule(ruleId){
+    return adminHttp.delete(`/coupons/auto-issue/rules/${ruleId}`)
+  },
+  adminSetAutoIssueConfig(payload){
+    return adminHttp.post(`/coupons/auto-issue/config`, payload)
+  },
+  // 日志查看
+  adminListLogFiles(){
+    return adminHttp.get(`/logs/files`)
+  },
+  adminGetLogStats(){
+    return adminHttp.get(`/logs/stats`)
+  },
+  adminReadLogFile(filename, lines = 1000, level = null, search = null, reverse = true){
+    const params = { lines, reverse }
+    if (level) params.level = level
+    if (search) params.search = search
+    return adminHttp.get(`/logs/read/${filename}`, { params })
+  },
+  adminClearLogFile(filename){
+    return adminHttp.delete(`/logs/clear/${filename}`)
   },
   clearAdminAuth(){
     delete adminHttp.defaults.headers.common["Authorization"]

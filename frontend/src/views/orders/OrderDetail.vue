@@ -24,12 +24,18 @@
         <div>
           <strong>{{ item.product.name }}</strong>
           <p>数量：{{ item.quantity }}</p>
+          <p v-if="order.status === 'completed' && !item.reviewed" class="review-prompt">
+            <router-link :to="{ name: 'product-detail', params: { id: item.product.id } }" class="review-link">
+              💬 去评价此商品
+            </router-link>
+          </p>
         </div>
         <span class="price">￥{{ item.unit_price.toFixed(2) }}</span>
       </li>
     </ul>
     <div class="actions">
       <router-link class="btn secondary" :to="firstChatLink">联系客服</router-link>
+      <router-link v-if="order.status === 'completed'" class="btn" to="/profile/reviews">查看我的评价</router-link>
     </div>
   </section>
   <div v-else class="loading">加载中...</div>
@@ -107,6 +113,9 @@ onMounted(() => { loadOrder(); });
 .items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .items li { display: flex; justify-content: space-between; align-items: center; }
 .price { font-weight: 600; }
+.review-prompt { margin-top: 8px; }
+.review-link { color: #2563eb; text-decoration: none; font-size: 14px; }
+.review-link:hover { text-decoration: underline; }
 .discount { margin-top: 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
 .loading { padding: 32px; text-align: center; }
 </style>

@@ -16,6 +16,8 @@
 
     <div class="tabs">
       <button :class="['tab', {active: active==='stats'}]" @click="active='stats'">统计</button>
+      <button :class="['tab', {active: active==='stock'}]" @click="active='stock'">库存预警</button>
+      <button :class="['tab', {active: active==='reviews'}]" @click="active='reviews'">评价管理</button>
       <button :class="['tab', {active: active==='users'}]" @click="active='users'">用户</button>
       <button :class="['tab', {active: active==='categories'}]" @click="active='categories'">类别</button>
       <button :class="['tab', {active: active==='products'}]" @click="active='products'">商品</button>
@@ -24,34 +26,176 @@
       <button :class="['tab', {active: active==='coupons'}]" @click="active='coupons'">优惠券</button>
       <button :class="['tab', {active: active==='memberships'}]" @click="active='memberships'">会员</button>
       <button :class="['tab', {active: active==='knowledge'}]" @click="active='knowledge'">知识库</button>
+      <button :class="['tab', {active: active==='cache'}]" @click="active='cache'">缓存管理</button>
+      <button :class="['tab', {active: active==='logs'}]" @click="active='logs'">日志查看</button>
     </div>
 
     <div v-if="active==='stats'" class="card">
       <h3>统计概览</h3>
       <div class="grid">
-        <div class="kpi"><strong>用户：</strong>{{ stats.users_count }}</div>
-        <div class="kpi"><strong>商品：</strong>{{ stats.products_count }}</div>
-        <div class="kpi"><strong>订单：</strong>{{ stats.orders_count }}</div>
+        <div class="kpi"><strong>用户总数：</strong>{{ dashboardStats.total_users || 0 }}</div>
+        <div class="kpi"><strong>商品总数：</strong>{{ dashboardStats.total_products || 0 }}</div>
+        <div class="kpi"><strong>订单总数：</strong>{{ dashboardStats.total_orders || 0 }}</div>
+        <div class="kpi"><strong>总销售额：</strong>￥{{ (dashboardStats.total_sales_amount || 0).toFixed(2) }}</div>
       </div>
       <div class="list">
-        <h4>订单状态分布</h4>
+        <h4>近7天订单量</h4>
+        <p>{{ dashboardStats.recent_orders_7_days || 0 }} 单</p>
+      </div>
+      <div class="list">
+        <h4>热门商品（销量前5）</h4>
         <ul>
-          <li v-for="(cnt, st) in stats.orders_by_status" :key="st">{{ st }}：{{ cnt }}</li>
+          <li v-for="p in (dashboardStats.top_5_products || [])" :key="p.name">
+            {{ p.name }}：销量 {{ p.quantity_sold }}
+          </li>
+        </ul>
+      </div>
+      
+      <!-- 详细统计 -->
+      <div class="row" style="margin-top: 16px; gap: 12px;">
+        <button class="btn outline" @click="loadSalesStatistics">销售统计</button>
+        <button class="btn outline" @click="loadProductStatistics">商品统计</button>
+        <button class="btn outline" @click="loadUserStatistics">用户统计</button>
+      </div>
+      
+      <!-- 销售统计 -->
+      <div v-if="salesStats !== null" class="list" style="margin-top: 16px;">
+        <h4>销售统计（近{{ salesDays }}天）</h4>
+        <div class="row">
+          <input type="number" v-model.number="salesDays" placeholder="天数" style="width: 80px;" min="1" max="365" />
+          <button class="btn" @click="loadSalesStatistics">查询</button>
+        </div>
+        <ul v-if="salesStats && salesStats.data && salesStats.data.length > 0">
+          <li v-for="item in salesStats.data" :key="item.date">
+            {{ item.date }}：订单数 {{ item.orders }}，销售额 ￥{{ (item.amount || 0).toFixed(2) }}
+          </li>
+        </ul>
+        <p v-else style="color: #6b7280; padding: 16px;">暂无销售数据</p>
+      </div>
+      
+      <!-- 商品统计 -->
+      <div v-if="productStats !== null" class="list" style="margin-top: 16px;">
+        <h4>商品销售统计</h4>
+        <ul v-if="productStats && productStats.top_products && productStats.top_products.length > 0">
+          <li v-for="p in productStats.top_products" :key="p.product_id || p.name">
+            {{ p.name || `商品ID: ${p.product_id}` }}：销量 {{ p.quantity_sold || 0 }}，销售额 ￥{{ (p.sales_amount || 0).toFixed(2) }}
+          </li>
+        </ul>
+        <p v-else style="color: #6b7280; padding: 16px;">暂无商品销售数据</p>
+      </div>
+      
+      <!-- 用户统计 -->
+      <div v-if="userStats !== null" class="list" style="margin-top: 16px;">
+        <h4>用户统计</h4>
+        <ul v-if="userStats">
+          <li v-if="userStats.total_users !== undefined">总用户数：{{ userStats.total_users }}</li>
+          <li v-if="userStats.new_users_today !== undefined">今日新增：{{ userStats.new_users_today }}</li>
+          <li v-if="userStats.active_users_7_days !== undefined">近7天活跃：{{ userStats.active_users_7_days }}</li>
+          <li v-if="userStats.monthly_registrations && userStats.monthly_registrations.length > 0">
+            <strong>用户注册趋势（最近6个月）：</strong>
+            <ul style="margin-top: 8px; margin-left: 20px;">
+              <li v-for="(reg, idx) in userStats.monthly_registrations.slice(0, 6)" :key="idx">
+                {{ reg.year }}-{{ String(reg.month).padStart(2, '0') }}：{{ reg.user_count }} 人
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <p v-else style="color: #6b7280; padding: 16px;">暂无用户统计数据</p>
+      </div>
+      
+      <button class="btn" @click="loadDashboardStats">刷新概览</button>
+    </div>
+
+    <div v-if="active==='stock'" class="card">
+      <h3>库存预警</h3>
+      <div class="row" style="margin-bottom: 16px;">
+        <label>预警阈值：</label>
+        <input type="number" v-model.number="stockThreshold" style="width: 80px;" min="0" />
+        <button class="btn" @click="loadStockAlerts">查询</button>
+        <button class="btn" @click="loadStockStatistics">统计</button>
+      </div>
+      <div v-if="stockStats" class="list">
+        <h4>库存统计</h4>
+        <ul>
+          <li>总商品数：{{ stockStats.total_products || 0 }}</li>
+          <li>低库存商品数：{{ stockStats.low_stock_count || 0 }}</li>
+          <li>缺货商品数：{{ stockStats.out_of_stock_count || 0 }}</li>
         </ul>
       </div>
       <div class="list">
-        <h4>近7天销售额</h4>
-        <ul>
-          <li v-for="d in stats.sales_by_day" :key="d.date">{{ d.date }}：￥{{ d.amount.toFixed(2) }}</li>
+        <h4>低库存商品列表</h4>
+        <ul v-if="stockAlerts.length > 0">
+          <li v-for="alert in stockAlerts" :key="alert.product_id || alert.id" style="padding: 8px; border-bottom: 1px solid #eee;">
+            <strong>商品ID：</strong>{{ alert.product_id || alert.id }} | 
+            <strong>名称：</strong>{{ alert.product_name || alert.name }} | 
+            <strong>当前库存：</strong><span :style="{ color: (alert.current_stock || alert.stock || 0) <= 0 ? 'red' : '#f59e0b' }">{{ alert.current_stock || alert.stock || 0 }}</span>
+            <span v-if="alert.alert_level" style="margin-left: 8px; padding: 2px 6px; border-radius: 4px; font-size: 12px;" :style="{ 
+              background: alert.alert_level === 'critical' ? '#fee2e2' : alert.alert_level === 'high' ? '#fef3c7' : '#dbeafe',
+              color: alert.alert_level === 'critical' ? '#991b1b' : alert.alert_level === 'high' ? '#92400e' : '#1e40af'
+            }">
+              {{ alert.alert_level === 'critical' ? '缺货' : alert.alert_level === 'high' ? '高预警' : alert.alert_level === 'medium' ? '中预警' : '低预警' }}
+            </span>
+          </li>
         </ul>
+        <p v-else style="color: #6b7280; padding: 16px;">暂无低库存商品</p>
+      </div>
+    </div>
+
+    <div v-if="active==='reviews'" class="card">
+      <h3>评价管理</h3>
+      <div class="row" style="margin-bottom: 16px;">
+        <input 
+          v-model.number="reviewFilter.productId" 
+          type="number" 
+          placeholder="商品ID（可选）" 
+          style="width: 120px;" 
+          min="1" 
+          @input="handleProductIdInput"
+        />
+        <select v-model="reviewFilter.status" style="width: 120px;">
+          <option value="">全部状态</option>
+          <option value="pending">待审核</option>
+          <option value="approved">已通过</option>
+          <option value="rejected">已拒绝</option>
+        </select>
+        <button class="btn" @click="loadReviews(1)">查询</button>
+        <button class="btn" @click="loadReviews(reviewsList.page || 1)">刷新</button>
       </div>
       <div class="list">
-        <h4>Top 类别</h4>
-        <ul>
-          <li v-for="c in stats.top_categories" :key="c.category">{{ c.category }}：{{ c.count }}</li>
+        <h4>评价列表（{{ reviewsList.total || 0 }}条）</h4>
+        <ul v-if="reviewsList.items && reviewsList.items.length > 0">
+          <li v-for="review in reviewsList.items" :key="review.id" style="padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px;">
+              <span><strong>评价ID：</strong>{{ review.id }}</span>
+              <span><strong>商品ID：</strong>{{ review.product_id }}</span>
+              <span><strong>用户ID：</strong>{{ review.user_id }}</span>
+              <span><strong>评分：</strong>⭐ {{ review.rating }}</span>
+              <span><strong>状态：</strong>{{ review.status }}</span>
+              <span v-if="review.verified_purchase" style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">已购买</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <strong>评价内容：</strong>{{ review.comment || '无评价内容' }}
+            </div>
+            <div v-if="review.images_list && review.images_list.length > 0" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+              <img v-for="(img, idx) in review.images_list" :key="idx" :src="img" :alt="`评价图片${idx+1}`" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" />
+            </div>
+            <div style="color: #6b7280; font-size: 14px; margin-bottom: 8px;">
+              {{ formatDate(review.created_at) }}
+            </div>
+            <div class="row">
+              <button class="btn danger" @click="deleteReview(review)">删除</button>
+            </div>
+          </li>
         </ul>
+        <p v-else style="color: #6b7280; padding: 16px;">暂无评价</p>
+        
+        <!-- 分页 -->
+        <div v-if="reviewsList.total > reviewsList.page_size" class="pagination">
+          <button @click="loadReviews(reviewsList.page - 1)" :disabled="reviewsList.page <= 1">上一页</button>
+          <span>第 {{ reviewsList.page }} / {{ Math.ceil(reviewsList.total / reviewsList.page_size) }} 页</span>
+          <button @click="loadReviews(reviewsList.page + 1)" :disabled="reviewsList.page >= Math.ceil(reviewsList.total / reviewsList.page_size)">下一页</button>
+        </div>
       </div>
-      <button class="btn" @click="loadStats">刷新</button>
     </div>
 
     <div v-if="active==='users'" class="card">
@@ -301,6 +445,77 @@
         <button class="btn" @click="assignCouponBulk">一键发放</button>
       </div>
       <button class="btn" @click="loadCoupons">刷新</button>
+      
+      <!-- 优惠券自动发放规则管理 -->
+      <div class="card" style="margin-top: 24px;">
+        <h3>优惠券自动发放规则</h3>
+        <div class="row" style="margin-bottom: 16px;">
+          <button class="btn" @click="loadAutoIssueRules">刷新规则</button>
+          <button class="btn outline" @click="showCreateRuleForm = !showCreateRuleForm">新增规则</button>
+        </div>
+        
+        <!-- 自动发放配置 -->
+        <div v-if="autoIssueConfig" class="list" style="margin-bottom: 16px;">
+          <h4>自动发放配置</h4>
+          <div class="row" style="margin-bottom: 8px;">
+            <label>状态：</label>
+            <span :style="{ color: autoIssueConfig.enabled ? '#10b981' : '#6b7280' }">
+              {{ autoIssueConfig.enabled ? '已启用' : '已禁用' }}
+            </span>
+          </div>
+          <div class="row" style="margin-bottom: 8px;">
+            <input v-model.number="autoIssueConfigForm.new_user_coupon_id" type="number" placeholder="新用户注册优惠券ID" style="width: 200px;" />
+            <input v-model.number="autoIssueConfigForm.first_order_coupon_id" type="number" placeholder="首次购买优惠券ID" style="width: 200px;" />
+            <button class="btn outline" @click="saveAutoIssueConfig">保存配置</button>
+          </div>
+        </div>
+        
+        <!-- 创建规则表单 -->
+        <div v-if="showCreateRuleForm" class="card" style="margin-bottom: 16px; background: #f9fafb;">
+          <h4>新增自动发放规则</h4>
+          <form class="row" @submit.prevent="createAutoIssueRule">
+            <input v-model="autoIssueRuleForm.rule_id" placeholder="规则ID（可选，自动生成）" />
+            <select v-model="autoIssueRuleForm.trigger" required>
+              <option value="">选择触发器</option>
+              <option value="register">新用户注册</option>
+              <option value="first_order">首次购买</option>
+              <option value="birthday">生日</option>
+              <option value="cron">定时任务（Cron）</option>
+              <option value="date">指定日期</option>
+            </select>
+            <input v-model.number="autoIssueRuleForm.coupon_id" type="number" placeholder="优惠券ID" required />
+            <input v-model="autoIssueRuleForm.cron" placeholder="Cron表达式（如使用cron触发器）" />
+            <label>启用<input type="checkbox" v-model="autoIssueRuleForm.enabled" /></label>
+            <button class="btn" type="submit">创建规则</button>
+            <button class="btn outline" type="button" @click="showCreateRuleForm = false">取消</button>
+          </form>
+        </div>
+        
+        <!-- 规则列表 -->
+        <div class="list">
+          <h4>自动发放规则列表（{{ Object.keys(autoIssueRules).length || 0 }}条）</h4>
+          <ul v-if="Object.keys(autoIssueRules).length > 0">
+            <li v-for="(rule, ruleId) in autoIssueRules" :key="ruleId" style="padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;">
+              <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px;">
+                <span><strong>规则ID：</strong>{{ ruleId }}</span>
+                <span><strong>触发器：</strong>{{ rule.trigger }}</span>
+                <span><strong>优惠券ID：</strong>{{ rule.coupon_id }}</span>
+                <span :style="{ color: rule.enabled ? '#10b981' : '#6b7280' }">
+                  {{ rule.enabled ? '已启用' : '已禁用' }}
+                </span>
+              </div>
+              <div v-if="rule.cron" style="margin-bottom: 8px;">
+                <strong>Cron表达式：</strong>{{ rule.cron }}
+              </div>
+              <div class="row">
+                <button class="btn outline" @click="toggleAutoIssueRule(ruleId, !rule.enabled)">{{ rule.enabled ? '禁用' : '启用' }}</button>
+                <button class="btn danger" @click="deleteAutoIssueRule(ruleId)">删除</button>
+              </div>
+            </li>
+          </ul>
+          <p v-else style="color: #6b7280; padding: 16px;">暂无自动发放规则</p>
+        </div>
+      </div>
     </div>
 
     <div v-if="active==='memberships'" class="card">
@@ -541,6 +756,112 @@
         </div>
       </div>
     </div>
+
+    <!-- 缓存管理 -->
+    <div v-if="active==='cache'" class="card">
+      <h3>Redis 缓存管理</h3>
+      <div class="row" style="margin-bottom: 16px;">
+        <button class="btn" @click="loadCacheStatus">刷新状态</button>
+        <button class="btn danger" @click="clearAllCache">清空所有缓存</button>
+      </div>
+      
+      <!-- 缓存状态 -->
+      <div v-if="cacheStatus" class="list">
+        <h4>缓存状态</h4>
+        <ul>
+          <li><strong>状态：</strong><span :style="{ color: cacheStatus.enabled ? '#10b981' : '#ef4444' }">{{ cacheStatus.enabled ? '已启用' : '已禁用' }}</span></li>
+          <li><strong>连接状态：</strong><span :style="{ color: cacheStatus.connected ? '#10b981' : '#ef4444' }">{{ cacheStatus.connected ? '已连接' : '未连接' }}</span></li>
+          <li><strong>缓存键数量：</strong>{{ cacheStatus.keys_count || 0 }}</li>
+          <li v-if="cacheStatus.memory_used"><strong>内存使用：</strong>{{ cacheStatus.memory_used }}</li>
+          <li v-if="cacheStatus.error" style="color: #ef4444;"><strong>错误：</strong>{{ cacheStatus.error }}</li>
+        </ul>
+      </div>
+      
+      <!-- 缓存操作 -->
+      <div class="list" style="margin-top: 16px;">
+        <h4>缓存操作</h4>
+        <div class="row">
+          <input v-model="cachePattern" placeholder="缓存键模式（如：product:*）" style="flex: 1;" />
+          <button class="btn danger" @click="clearCachePattern">删除匹配的缓存</button>
+        </div>
+        <p class="hint" style="margin-top: 8px;">提示：可以使用通配符 * 来匹配多个缓存键，例如 "product:*" 会删除所有商品相关的缓存。</p>
+      </div>
+    </div>
+
+    <!-- 日志查看 -->
+    <div v-if="active==='logs'" class="card">
+      <h3>日志查看</h3>
+      <div class="row" style="margin-bottom: 16px;">
+        <button class="btn" @click="loadLogFiles">刷新文件列表</button>
+        <button class="btn" @click="loadLogStats">刷新统计</button>
+      </div>
+      
+      <!-- 日志统计 -->
+      <div v-if="logStats" class="list" style="margin-bottom: 16px;">
+        <h4>日志统计</h4>
+        <ul>
+          <li><strong>日志目录：</strong>{{ logStats.log_dir }}</li>
+          <li><strong>文件数量：</strong>{{ logStats.total_files || 0 }}</li>
+          <li><strong>总大小：</strong>{{ logStats.total_size_mb || 0 }} MB</li>
+        </ul>
+      </div>
+      
+      <!-- 日志文件列表 -->
+      <div class="list" style="margin-bottom: 16px;">
+        <h4>日志文件列表</h4>
+        <ul v-if="logFiles && logFiles.length > 0">
+          <li v-for="file in logFiles" :key="file.name" style="padding: 8px; border-bottom: 1px solid #eee;">
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <span><strong>{{ file.name }}</strong></span>
+              <span style="color: #6b7280;">{{ (file.size / 1024).toFixed(2) }} KB</span>
+              <span style="color: #6b7280; font-size: 12px;">{{ file.modified ? new Date(file.modified).toLocaleString('zh-CN') : '' }}</span>
+              <span v-if="file.type === 'error'" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">错误日志</span>
+              <button class="btn outline" style="font-size: 12px; padding: 4px 8px;" @click="readLogFile(file.name)">查看</button>
+              <button class="btn danger" style="font-size: 12px; padding: 4px 8px;" @click="clearLogFile(file.name)">清空</button>
+            </div>
+          </li>
+        </ul>
+        <p v-else style="color: #6b7280; padding: 16px;">暂无日志文件</p>
+      </div>
+      
+      <!-- 日志查看器 -->
+      <div v-if="selectedLogFile" class="card" style="background: #f9fafb;">
+        <h4>查看日志：{{ selectedLogFile }}</h4>
+        <div class="row" style="margin-bottom: 16px;">
+          <input v-model.number="logViewLines" type="number" placeholder="行数" style="width: 100px;" min="100" max="10000" />
+          <select v-model="logViewLevel" style="width: 120px;">
+            <option value="">全部级别</option>
+            <option value="DEBUG">DEBUG</option>
+            <option value="INFO">INFO</option>
+            <option value="WARNING">WARNING</option>
+            <option value="ERROR">ERROR</option>
+            <option value="CRITICAL">CRITICAL</option>
+          </select>
+          <input v-model="logViewSearch" placeholder="搜索文本" style="flex: 1;" />
+          <label style="display: flex; align-items: center; gap: 4px;">
+            <input type="checkbox" v-model="logViewReverse" />
+            从末尾读取
+          </label>
+          <button class="btn" @click="readLogFile(selectedLogFile)">刷新</button>
+        </div>
+        
+        <div v-if="logContent" class="list">
+          <h5>日志内容（{{ logContent.filtered_lines || logContent.lines?.length || 0 }} / {{ logContent.total_lines || 0 }} 行）</h5>
+          <div v-if="logContent.error" style="color: #ef4444; padding: 12px; background: #fee2e2; border-radius: 4px;">
+            <strong>错误：</strong>{{ logContent.error }}
+          </div>
+          <div v-else style="max-height: 600px; overflow-y: auto; background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-family: monospace; font-size: 12px; line-height: 1.5;">
+            <div v-for="(line, idx) in logContent.lines" :key="idx" style="margin-bottom: 2px; word-wrap: break-word;">
+              <span v-if="line.includes(' - ERROR - ')" style="color: #f48771;">{{ line }}</span>
+              <span v-else-if="line.includes(' - WARNING - ')" style="color: #dcdcaa;">{{ line }}</span>
+              <span v-else-if="line.includes(' - INFO - ')" style="color: #4ec9b0;">{{ line }}</span>
+              <span v-else-if="line.includes(' - DEBUG - ')" style="color: #9cdcfe;">{{ line }}</span>
+              <span v-else>{{ line }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -601,6 +922,41 @@ const fileUploadCategory = ref('')
 const knowledgeSearchQuery = ref('')
 const knowledgeSearchTopK = ref(5)
 const knowledgeSearchResults = ref([])
+// 统计数据
+const dashboardStats = reactive({ total_users: 0, total_products: 0, total_orders: 0, total_sales_amount: 0, recent_orders_7_days: 0, top_5_products: [] })
+// 库存预警
+const stockAlerts = ref([])
+const stockStats = reactive({ total_products: 0, low_stock_count: 0, out_of_stock_count: 0 })
+const stockThreshold = ref(10)
+// 详细统计
+const salesStats = ref(null)
+const salesDays = ref(30)
+const productStats = ref(null)
+const userStats = ref(null)
+// 评价管理
+const reviewsList = ref({ items: [], total: 0, page: 1, page_size: 20 })
+const reviewFilter = reactive({ productId: null, status: '' })
+
+// 缓存管理
+const cacheStatus = ref(null)
+const cachePattern = ref('')
+
+// 日志查看
+const logFiles = ref([])
+const logStats = ref(null)
+const selectedLogFile = ref(null)
+const logContent = ref(null)
+const logViewLines = ref(1000)
+const logViewLevel = ref('')
+const logViewSearch = ref('')
+const logViewReverse = ref(true)
+
+// 优惠券自动发放规则
+const autoIssueRules = ref({})
+const autoIssueConfig = ref(null)
+const autoIssueConfigForm = reactive({ new_user_coupon_id: null, first_order_coupon_id: null })
+const showCreateRuleForm = ref(false)
+const autoIssueRuleForm = reactive({ rule_id: '', trigger: '', coupon_id: null, cron: '', enabled: true })
 
 
 function formatDate(d){
@@ -621,18 +977,34 @@ async function login(){
   const u = (form.username || '').trim()
   const p = (form.password || '').trim()
   if (!u || !p){ alert('请输入管理员用户名和密码'); return }
+  
+  // 先设置认证头，确保在发送请求前设置完成
   api.setAdminAuth(u, p)
+  
+  // 等待一下确保认证头已设置
+  await new Promise(resolve => setTimeout(resolve, 10))
+  
   try {
-    await api.adminStatus()
+    const response = await api.adminStatus()
     authed.value = true
+    statusText.value = '管理员服务可用'
     active.value = 'stats'
-    await loadStats()
+    await loadDashboardStats()
     form.username = ''
     form.password = ''
   } catch (e) {
     authed.value = false
-    const msg = e?.response?.data?.detail || e?.message || '认证失败'
-    alert(msg)
+    api.clearAdminAuth()
+    if (e?.response?.status === 401) {
+      statusText.value = '认证失败，请检查用户名和密码'
+      alert('认证失败，请检查用户名和密码是否正确（默认：admin / 123456）')
+    } else if (e?.code === 'ECONNABORTED' || e?.message?.includes('timeout')) {
+      statusText.value = '请求超时，请检查后端服务是否运行'
+      alert('请求超时，请确保后端服务正在运行（http://127.0.0.1:8000）')
+    } else {
+      statusText.value = '登录失败：' + (e?.response?.data?.detail || e?.message || '未知错误')
+      alert(e?.response?.data?.detail || e?.message || '登录失败')
+    }
   }
 }
 
@@ -644,19 +1016,372 @@ function logoutAdmin(){
 }
 
 async function checkStatus(){
+  // 检查是否有认证信息（从 sessionStorage 或 headers 中）
+  try {
+    const hasAuth = sessionStorage.getItem('admin_basic') || api.adminHttp?.defaults?.headers?.common?.Authorization
+    if (!hasAuth) {
+      authed.value = false
+      statusText.value = '请先登录管理员'
+      return
+    }
+  } catch {}
+  
   try {
     await api.adminStatus()
     authed.value = true
     statusText.value = '管理员服务可用'
   } catch (e) {
     authed.value = false
-    statusText.value = '管理员服务不可用'
+    if (e?.response?.status === 401) {
+      statusText.value = '认证失败，请重新登录'
+      api.clearAdminAuth()
+    } else {
+      statusText.value = '管理员服务不可用'
+    }
   }
 }
 
 async function loadStats(){
   const { data } = await api.adminStats()
   Object.assign(stats, data)
+}
+
+async function loadDashboardStats(){
+  try {
+    const { data } = await api.adminGetDashboardStats()
+    Object.assign(dashboardStats, data)
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '加载统计数据失败')
+  }
+}
+
+async function loadStockAlerts(){
+  try {
+    const { data } = await api.adminGetStockAlerts(stockThreshold.value || 10)
+    stockAlerts.value = data.alerts || []
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '加载库存预警失败')
+  }
+}
+
+async function loadStockStatistics(){
+  try {
+    console.log('加载库存统计，阈值:', stockThreshold.value || 10)
+    const { data } = await api.adminGetStockStatistics(stockThreshold.value || 10)
+    console.log('库存统计数据:', data)
+    Object.assign(stockStats, data)
+  } catch (e) {
+    console.error('加载库存统计失败:', e)
+    const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || '加载库存统计失败'
+    alert(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg))
+  }
+}
+
+async function loadSalesStatistics(){
+  try {
+    console.log('加载销售统计，天数:', salesDays.value || 30)
+    const { data } = await api.adminGetSalesStatistics(salesDays.value || 30)
+    console.log('销售统计数据:', data)
+    salesStats.value = data
+    if (!data || !data.data || data.data.length === 0) {
+      console.warn('销售统计数据为空')
+    }
+  } catch (e) {
+    console.error('加载销售统计失败:', e)
+    const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || '加载销售统计失败'
+    alert(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg))
+  }
+}
+
+async function loadProductStatistics(){
+  try {
+    console.log('加载商品统计')
+    const { data } = await api.adminGetProductStatistics()
+    console.log('商品统计数据:', data)
+    productStats.value = data
+    if (!data || !data.top_products || data.top_products.length === 0) {
+      console.warn('商品统计数据为空')
+    }
+  } catch (e) {
+    console.error('加载商品统计失败:', e)
+    const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || '加载商品统计失败'
+    alert(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg))
+  }
+}
+
+async function loadUserStatistics(){
+  try {
+    console.log('加载用户统计')
+    const { data } = await api.adminGetUserStatistics()
+    console.log('用户统计数据:', data)
+    userStats.value = data
+    if (!data) {
+      console.warn('用户统计数据为空')
+    }
+  } catch (e) {
+    console.error('加载用户统计失败:', e)
+    const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || '加载用户统计失败'
+    alert(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg))
+  }
+}
+
+// 处理商品ID输入，确保只能是正整数或null
+function handleProductIdInput(event) {
+  const value = event.target.value
+  if (value === '' || value === null || value === undefined) {
+    reviewFilter.productId = null
+  } else {
+    const num = parseInt(value)
+    if (isNaN(num) || num < 1) {
+      // 如果输入无效或小于1，清空输入框
+      reviewFilter.productId = null
+      event.target.value = ''
+    } else {
+      reviewFilter.productId = num
+    }
+  }
+}
+
+async function loadReviews(page = 1){
+  try {
+    // 确保 page 是数字，防止事件对象被传递
+    let actualPage = page
+    if (typeof page !== 'number') {
+      console.warn('loadReviews 收到非数字参数，使用默认值 1:', page)
+      actualPage = reviewsList.value.page || 1
+    } else {
+      actualPage = Math.max(1, Math.floor(actualPage)) // 确保是正整数
+    }
+    
+    // 重置页码（如果点击查询或刷新）
+    if (actualPage === 1) {
+      reviewsList.value.page = 1
+    }
+    
+    // 处理筛选参数：只接受大于0的正整数，其他情况转为 undefined
+    const productId = (reviewFilter.productId && typeof reviewFilter.productId === 'number' && reviewFilter.productId > 0) ? reviewFilter.productId : undefined
+    const status = reviewFilter.status && reviewFilter.status.trim() ? reviewFilter.status.trim() : undefined
+    
+    console.log('加载评价列表，筛选条件:', { productId, status }, '页码:', actualPage)
+    const { data } = await api.adminListReviews(
+      productId,
+      status,
+      actualPage,
+      20
+    )
+    
+    // 确保数据结构正确
+    if (data && typeof data === 'object') {
+      reviewsList.value = {
+        items: data.items || [],
+        total: data.total || 0,
+        page: data.page || actualPage,
+        page_size: data.page_size || 20
+      }
+      
+      // 解析图片JSON（后端已处理，但前端也处理以防万一）
+      if (reviewsList.value.items) {
+        reviewsList.value.items.forEach(item => {
+          if (item.images && typeof item.images === 'string') {
+            try {
+              item.images_list = JSON.parse(item.images)
+            } catch {
+              item.images_list = []
+            }
+          } else if (item.images_list) {
+            // 后端已解析
+            item.images_list = item.images_list
+          } else {
+            item.images_list = []
+          }
+        })
+      }
+    } else {
+      console.error('返回数据格式错误:', data)
+      alert('返回数据格式错误，请查看控制台')
+    }
+  } catch (e) {
+    console.error('加载评价列表失败:', e)
+    const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || '加载评价列表失败'
+    alert(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg))
+  }
+}
+
+async function deleteReview(review){
+  if (!review || !review.id) {
+    alert('评价信息无效')
+    return
+  }
+  if (!confirm(`确认删除评价 #${review.id}？`)) return
+  try {
+    await api.adminDeleteReview(review.id)
+    // 删除成功后重新加载当前页
+    const currentPage = reviewsList.value.page || 1
+    await loadReviews(currentPage)
+    alert('删除成功')
+  } catch (e) {
+    console.error('删除评价失败:', e)
+    const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || '删除失败'
+    alert(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg))
+  }
+}
+
+// 缓存管理函数
+async function loadCacheStatus(){
+  try {
+    const { data } = await api.adminGetCacheStatus()
+    cacheStatus.value = data
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '加载缓存状态失败')
+  }
+}
+
+async function clearAllCache(){
+  if (!confirm('确认清空所有缓存？')) return
+  try {
+    const { data } = await api.adminClearCache()
+    alert(data.message || '缓存已清空')
+    await loadCacheStatus()
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '清空缓存失败')
+  }
+}
+
+async function clearCachePattern(){
+  if (!cachePattern.value) {
+    alert('请输入缓存键模式')
+    return
+  }
+  if (!confirm(`确认删除匹配 "${cachePattern.value}" 的缓存？`)) return
+  try {
+    const { data } = await api.adminDeleteCachePattern(cachePattern.value)
+    alert(data.message || `已删除 ${data.deleted_count || 0} 个缓存键`)
+    cachePattern.value = ''
+    await loadCacheStatus()
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '删除缓存失败')
+  }
+}
+
+// 日志查看函数
+async function loadLogFiles(){
+  try {
+    const { data } = await api.adminListLogFiles()
+    logFiles.value = data
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '加载日志文件列表失败')
+  }
+}
+
+async function loadLogStats(){
+  try {
+    const { data } = await api.adminGetLogStats()
+    logStats.value = data
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '加载日志统计失败')
+  }
+}
+
+async function readLogFile(filename){
+  try {
+    selectedLogFile.value = filename
+    const { data } = await api.adminReadLogFile(
+      filename,
+      logViewLines.value || 1000,
+      logViewLevel.value || null,
+      logViewSearch.value || null,
+      logViewReverse.value
+    )
+    logContent.value = data
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '读取日志文件失败')
+  }
+}
+
+async function clearLogFile(filename){
+  if (!confirm(`确认清空日志文件 "${filename}"？`)) return
+  try {
+    const { data } = await api.adminClearLogFile(filename)
+    alert(data.message || '日志文件已清空')
+    await loadLogFiles()
+    await loadLogStats()
+    if (selectedLogFile.value === filename) {
+      await readLogFile(filename)
+    }
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '清空日志文件失败')
+  }
+}
+
+// 优惠券自动发放规则管理函数
+async function loadAutoIssueRules(){
+  try {
+    const { data } = await api.adminGetAutoIssueRules()
+    autoIssueRules.value = data.rules || {}
+    autoIssueConfig.value = data
+    if (data.config) {
+      autoIssueConfigForm.new_user_coupon_id = data.config.COUPON_AUTO_ISSUE_NEW_USER_COUPON_ID ? parseInt(data.config.COUPON_AUTO_ISSUE_NEW_USER_COUPON_ID) : null
+      autoIssueConfigForm.first_order_coupon_id = data.config.COUPON_AUTO_ISSUE_FIRST_ORDER_COUPON_ID ? parseInt(data.config.COUPON_AUTO_ISSUE_FIRST_ORDER_COUPON_ID) : null
+    }
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '加载自动发放规则失败')
+  }
+}
+
+async function createAutoIssueRule(){
+  try {
+    const payload = { ...autoIssueRuleForm }
+    if (!payload.rule_id) delete payload.rule_id
+    if (!payload.cron) delete payload.cron
+    const { data } = await api.adminCreateAutoIssueRule(payload)
+    alert(data.message || '规则已创建')
+    showCreateRuleForm.value = false
+    Object.keys(autoIssueRuleForm).forEach(k => {
+      if (k === 'enabled') autoIssueRuleForm[k] = true
+      else autoIssueRuleForm[k] = ''
+    })
+    await loadAutoIssueRules()
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '创建规则失败')
+  }
+}
+
+async function toggleAutoIssueRule(ruleId, enabled){
+  try {
+    await api.adminUpdateAutoIssueRule(ruleId, { enabled })
+    await loadAutoIssueRules()
+    alert(enabled ? '规则已启用' : '规则已禁用')
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '更新规则失败')
+  }
+}
+
+async function deleteAutoIssueRule(ruleId){
+  if (!confirm(`确认删除规则 "${ruleId}"？`)) return
+  try {
+    await api.adminDeleteAutoIssueRule(ruleId)
+    await loadAutoIssueRules()
+    alert('规则已删除')
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '删除规则失败')
+  }
+}
+
+async function saveAutoIssueConfig(){
+  try {
+    const payload = {}
+    if (autoIssueConfigForm.new_user_coupon_id) {
+      payload.COUPON_AUTO_ISSUE_NEW_USER_COUPON_ID = autoIssueConfigForm.new_user_coupon_id
+    }
+    if (autoIssueConfigForm.first_order_coupon_id) {
+      payload.COUPON_AUTO_ISSUE_FIRST_ORDER_COUPON_ID = autoIssueConfigForm.first_order_coupon_id
+    }
+    await api.adminSetAutoIssueConfig(payload)
+    alert('配置已保存')
+    await loadAutoIssueRules()
+  } catch (e) {
+    alert(e?.response?.data?.detail || e?.message || '保存配置失败')
+  }
 }
 
 async function loadUsers(){
@@ -919,16 +1644,20 @@ async function updateLogistics(o){
   }
 }
 
-const loaded = reactive({ stats:false, users:false, categories:false, products:false, orders:false, chats:false, coupons:false, memberships:false, membershipPlans:false, membershipCards:false, knowledge:false })
+const loaded = reactive({ stats:false, stock:false, reviews:false, users:false, categories:false, products:false, orders:false, chats:false, coupons:false, memberships:false, membershipPlans:false, membershipCards:false, knowledge:false, cache:false, logs:false })
 function loadForTab(tab){
   if (!authed.value) return
-  if (tab === 'stats' && !loaded.stats){ loaded.stats = true; loadStats() }
+  if (tab === 'stats' && !loaded.stats){ loaded.stats = true; loadDashboardStats() }
+  if (tab === 'stock' && !loaded.stock){ loaded.stock = true; loadStockAlerts(); loadStockStatistics() }
+  if (tab === 'reviews' && !loaded.reviews){ loaded.reviews = true; loadReviews() }
+  if (tab === 'cache' && !loaded.cache){ loaded.cache = true; loadCacheStatus() }
+  if (tab === 'logs' && !loaded.logs){ loaded.logs = true; loadLogFiles(); loadLogStats() }
   if (tab === 'users' && !loaded.users){ loaded.users = true; loadUsers() }
   if (tab === 'categories' && !loaded.categories){ loaded.categories = true; loadCategories() }
   if (tab === 'products' && !loaded.products){ loaded.products = true; loadProducts() }
   if (tab === 'orders' && !loaded.orders){ loaded.orders = true; loadOrders() }
   if (tab === 'chats' && !loaded.chats){ loaded.chats = true; loadChats() }
-  if (tab === 'coupons' && !loaded.coupons){ loaded.coupons = true; loadCoupons() }
+  if (tab === 'coupons' && !loaded.coupons){ loaded.coupons = true; loadCoupons(); loadAutoIssueRules() }
   if (tab === 'memberships' && !loaded.memberships){ loaded.memberships = true; loadMemberships() }
   if (tab === 'memberships' && !loaded.membershipPlans){ loaded.membershipPlans = true; loadMembershipPlans() }
   if (tab === 'memberships' && !loaded.membershipCards){ loaded.membershipCards = true; loadMembershipCards() }
@@ -1115,7 +1844,28 @@ async function rebuildKnowledgeIndex(){
 
 onMounted(() => {
   api.initAdminAuthFromSession()
-  checkStatus().then(() => { loadForTab(active.value) })
+  // 初始化时不要自动检查状态，避免在没有认证时发送请求
+  authed.value = false
+  statusText.value = '请先登录管理员'
+  
+  // 如果有认证信息，延迟检查（给认证头设置时间）
+  setTimeout(() => {
+    try {
+      const hasAuth = sessionStorage.getItem('admin_basic') || api.adminHttp?.defaults?.headers?.common?.Authorization
+      if (hasAuth) {
+        checkStatus().then(() => { 
+          if (authed.value) {
+            loadForTab(active.value) 
+          }
+        }).catch(() => {
+          // 如果检查失败，清除无效的认证信息
+          api.clearAdminAuth()
+        })
+      }
+    } catch {
+      // 忽略错误
+    }
+  }, 100)
 })
 watch(active, (tab) => { loadForTab(tab) })
 </script>

@@ -19,6 +19,17 @@ from .admin_router import admin_router
 
 def create_app() -> FastAPI:
     load_env()
+    import os
+    
+    # 配置日志记录到文件
+    try:
+        from .services.logging_config import setup_logging
+        log_dir = os.environ.get("LOG_DIR")
+        log_level = os.environ.get("LOG_LEVEL", "INFO")
+        setup_logging(log_dir=log_dir, log_level=log_level)
+    except Exception as e:
+        print(f"⚠ 日志配置失败: {e}")
+    
     Base.metadata.create_all(bind=engine)
     from sqlalchemy import text
     from sqlalchemy import create_engine as _ce

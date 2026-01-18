@@ -14,6 +14,7 @@ import AddressBookView from '@/views/profile/AddressBookView.vue'
 import MembershipView from '@/views/profile/MembershipView.vue'
 import MembershipDetailView from '@/views/profile/MembershipDetailView.vue'
 import MembershipPurchaseView from '@/views/profile/MembershipPurchaseView.vue'
+import MyReviewsView from '@/views/profile/MyReviewsView.vue'
 import AdminDashboard from '@/views/admin/AdminDashboard.vue'
 import ChatView from '@/views/chat/ChatView.vue'
 
@@ -31,6 +32,7 @@ const routes = [
   { path: '/profile/edit', component: ProfileEditView, name: 'profile-edit' },
   { path: '/profile/address', component: AddressBookView, name: 'address-book' },
   { path: '/profile/membership', component: MembershipView, name: 'membership' },
+  { path: '/profile/reviews', component: MyReviewsView, name: 'my-reviews' },
   { path: '/membership/plan/:id/detail', component: MembershipDetailView, name: 'membership-detail' },
   { path: '/membership/plan/:id/purchase', component: MembershipPurchaseView, name: 'membership-purchase' },
   { path: '/membership/:level/detail', component: MembershipDetailView, name: 'membership-detail-level' },
