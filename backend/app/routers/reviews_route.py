@@ -42,6 +42,18 @@ def get_product_review_stats(product_id: int, db: Session = Depends(get_db)):
     return schemas.ProductReviewStats(**stats)
 
 
+@router.get("/users/{user_id}", response_model=schemas.ReviewPage)
+def list_user_reviews(
+    user_id: int,
+    status: Optional[str] = Query(None, description="评价状态"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """获取用户的评价列表"""
+    return review_service.list_reviews(user_id=user_id, status=status, page=page, page_size=page_size, db=db)
+
+
 @router.get("/{review_id}", response_model=schemas.ReviewRead)
 def get_review(review_id: int, db: Session = Depends(get_db)):
     """获取单个评价"""

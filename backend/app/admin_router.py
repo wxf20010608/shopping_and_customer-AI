@@ -7,10 +7,11 @@ import os, secrets
 
 from .database import get_db
 from . import schemas
-from .models import Product, Order, OrderItem, CartItem, Cart, OrderStatusEnum, ShippingStatusEnum, ShippingInfo, User, Category, Coupon, UserCoupon, Membership, MembershipPlan, MembershipCard, ChatMessage
+from .models import Product, Order, OrderItem, CartItem, Cart, OrderStatusEnum, ShippingStatusEnum, ShippingInfo, User, Category, Coupon, UserCoupon, Membership, MembershipPlan, MembershipCard, ChatMessage, Review
 from .services.statistics_service import get_statistics_service
 from .services.stock_alert_service import get_stock_alert_service
-from .services.coupon_auto_issue_service import get_auto_issue_service
+from .services.cache_service import get_cache_service
+from .services import review_service
 
 security = HTTPBasic()
 
@@ -287,6 +288,7 @@ def admin_assign_coupon_bulk(coupon_id: int, payload: dict, _: bool = Depends(ve
 def admin_get_auto_issue_rules(_: bool = Depends(verify_admin)):
     """获取优惠券自动发放规则配置"""
     try:
+        from .services.coupon_auto_issue_service import get_auto_issue_service
         auto_issue_service = get_auto_issue_service()
         return {
             "enabled": auto_issue_service.enabled,
@@ -312,6 +314,191 @@ def admin_set_auto_issue_config(payload: dict, _: bool = Depends(verify_admin)):
         return {"status": "ok", "message": "配置已更新"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"配置更新失败: {str(e)}")
+
+@admin_router.post("/coupons/auto-issue/rules")
+def admin_create_auto_issue_rule(payload: dict, _: bool = Depends(verify_admin)):
+    """创建优惠券自动发放规则"""
+    try:
+        from .services.coupon_auto_issue_service import get_auto_issue_service
+        auto_issue_service = get_auto_issue_service()
+        rule_id = payload.get("rule_id") or f"rule_{len(auto_issue_service.rules) + 1}"
+        rule = {
+            "trigger": payload.get("trigger"),  # 'register', 'first_order', 'birthday', 'cron', 'date'
+            "coupon_id": payload.get("coupon_id"),
+            "condition": payload.get("condition"),
+            "cron": payload.get("cron"),
+            "enabled": payload.get("enabled", True)
+        }
+        auto_issue_service.register_rule(rule_id, rule)
+        return {"status": "ok", "message": "规则已创建", "rule_id": rule_id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"创建规则失败: {str(e)}")
+
+@admin_router.put("/coupons/auto-issue/rules/{rule_id}")
+def admin_update_auto_issue_rule(rule_id: str, payload: dict, _: bool = Depends(verify_admin)):
+    """更新优惠券自动发放规则"""
+    try:
+        from .services.coupon_auto_issue_service import get_auto_issue_service
+        auto_issue_service = get_auto_issue_service()
+        if rule_id not in auto_issue_service.rules:
+            raise HTTPException(status_code=404, detail="规则不存在")
+        
+        # 更新规则
+        existing_rule = auto_issue_service.rules[rule_id]
+        if "trigger" in payload:
+            existing_rule["trigger"] = payload["trigger"]
+        if "coupon_id" in payload:
+            existing_rule["coupon_id"] = payload["coupon_id"]
+        if "condition" in payload:
+            existing_rule["condition"] = payload["condition"]
+        if "cron" in payload:
+            existing_rule["cron"] = payload["cron"]
+        if "enabled" in payload:
+            existing_rule["enabled"] = payload["enabled"]
+        
+        return {"status": "ok", "message": "规则已更新"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"更新规则失败: {str(e)}")
+
+@admin_router.delete("/coupons/auto-issue/rules/{rule_id}")
+def admin_delete_auto_issue_rule(rule_id: str, _: bool = Depends(verify_admin)):
+    """删除优惠券自动发放规则"""
+    try:
+        from .services.coupon_auto_issue_service import get_auto_issue_service
+        auto_issue_service = get_auto_issue_service()
+        if rule_id not in auto_issue_service.rules:
+            raise HTTPException(status_code=404, detail="规则不存在")
+        
+        del auto_issue_service.rules[rule_id]
+        return {"status": "ok", "message": "规则已删除"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"删除规则失败: {str(e)}")
+
+# Redis 缓存管理接口
+@admin_router.get("/cache/status")
+def admin_get_cache_status(_: bool = Depends(verify_admin)):
+    """获取缓存状态"""
+    try:
+        cache_service = get_cache_service()
+        
+        # 获取缓存统计信息
+        stats = {
+            "enabled": cache_service.enabled,
+            "connected": cache_service.redis_client is not None,
+            "keys_count": 0
+        }
+        
+        if cache_service.enabled and cache_service.redis_client:
+            try:
+                # 统计所有键的数量
+                keys = cache_service.redis_client.keys("*")
+                stats["keys_count"] = len(keys) if keys else 0
+                
+                # 获取内存使用情况（如果支持）
+                try:
+                    info = cache_service.redis_client.info("memory")
+                    stats["memory_used"] = info.get("used_memory_human", "N/A")
+                except:
+                    pass
+            except Exception as e:
+                stats["error"] = str(e)
+        
+        return stats
+    except Exception as e:
+        return {"enabled": False, "connected": False, "error": str(e)}
+
+@admin_router.post("/cache/clear")
+def admin_clear_cache(_: bool = Depends(verify_admin)):
+    """清空所有缓存"""
+    try:
+        cache_service = get_cache_service()
+        
+        if not cache_service.enabled or not cache_service.redis_client:
+            return {"status": "error", "message": "缓存服务未启用"}
+        
+        success = cache_service.clear()
+        if success:
+            return {"status": "ok", "message": "缓存已清空"}
+        else:
+            return {"status": "error", "message": "清空缓存失败"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"清空缓存失败: {str(e)}")
+
+@admin_router.delete("/cache/{pattern}")
+def admin_delete_cache_pattern(pattern: str, _: bool = Depends(verify_admin)):
+    """按模式删除缓存"""
+    try:
+        cache_service = get_cache_service()
+        
+        if not cache_service.enabled or not cache_service.redis_client:
+            return {"status": "error", "message": "缓存服务未启用"}
+        
+        count = cache_service.delete_pattern(pattern)
+        return {"status": "ok", "message": f"已删除 {count} 个缓存键", "deleted_count": count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"删除缓存失败: {str(e)}")
+
+# 日志查看接口
+@admin_router.get("/logs/files")
+def admin_list_log_files(_: bool = Depends(verify_admin)):
+    """获取日志文件列表"""
+    try:
+        from .services.log_service import get_log_service
+        log_service = get_log_service()
+        return log_service.list_log_files()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取日志文件列表失败: {str(e)}")
+
+@admin_router.get("/logs/stats")
+def admin_get_log_stats(_: bool = Depends(verify_admin)):
+    """获取日志统计信息"""
+    try:
+        from .services.log_service import get_log_service
+        log_service = get_log_service()
+        return log_service.get_log_stats()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取日志统计失败: {str(e)}")
+
+@admin_router.get("/logs/read/{filename}")
+def admin_read_log_file(
+    filename: str,
+    lines: int = Query(1000, ge=1, le=10000, description="读取行数"),
+    level: str = Query(None, description="日志级别过滤（DEBUG/INFO/WARNING/ERROR/CRITICAL）"),
+    search: str = Query(None, description="搜索文本"),
+    reverse: bool = Query(True, description="是否反向读取（从文件末尾开始）"),
+    _: bool = Depends(verify_admin)
+):
+    """读取日志文件内容"""
+    try:
+        from .services.log_service import get_log_service
+        log_service = get_log_service()
+        return log_service.read_log_file(
+            filename=filename,
+            lines=lines,
+            level_filter=level,
+            search_text=search,
+            reverse=reverse
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"读取日志文件失败: {str(e)}")
+
+@admin_router.delete("/logs/clear/{filename}")
+def admin_clear_log_file(filename: str, _: bool = Depends(verify_admin)):
+    """清空日志文件"""
+    try:
+        from .services.log_service import get_log_service
+        log_service = get_log_service()
+        return log_service.clear_log_file(filename)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"清空日志文件失败: {str(e)}")
 
 # 数据统计接口
 @admin_router.get("/statistics/dashboard")
@@ -369,13 +556,85 @@ def admin_get_stock_alerts(
         raise HTTPException(status_code=500, detail=f"获取库存预警失败: {str(e)}")
 
 @admin_router.get("/stock-alerts/statistics")
-def admin_get_stock_statistics(_: bool = Depends(verify_admin), db: Session = Depends(get_db)):
+def admin_get_stock_statistics(
+    threshold: int = Query(None, ge=0, description="预警阈值（可选，不传则使用默认值）"),
+    _: bool = Depends(verify_admin),
+    db: Session = Depends(get_db)
+):
     """获取库存统计"""
     try:
         alert_service = get_stock_alert_service()
-        return alert_service.get_stock_statistics(db)
+        return alert_service.get_stock_statistics(db, threshold)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取库存统计失败: {str(e)}")
+
+# 评价管理接口
+@admin_router.get("/reviews")
+def admin_list_reviews(
+    product_id: int | None = Query(None, description="商品ID筛选"),
+    status: str | None = Query(None, description="评价状态筛选"),
+    page: int = Query(1, ge=1, description="页码"),
+    page_size: int = Query(20, ge=1, le=100, description="每页条数"),
+    _: bool = Depends(verify_admin),
+    db: Session = Depends(get_db)
+):
+    """获取评价列表（管理员）"""
+    try:
+        # 处理空值：如果 product_id 是 0 或空字符串，转为 None
+        if product_id is not None and product_id <= 0:
+            product_id = None
+        
+        # 处理空值：如果 status 是空字符串，转为 None
+        if status is not None and not status.strip():
+            status = None
+        
+        result = review_service.list_reviews(
+            product_id=product_id,
+            user_id=None,  # 管理员查看所有用户的评价
+            status=status,
+            page=page,
+            page_size=page_size,
+            db=db
+        )
+        
+        # 确保返回格式正确
+        return result
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"获取评价列表失败: {str(e)}")
+
+@admin_router.delete("/reviews/{review_id}")
+def admin_delete_review(
+    review_id: int,
+    _: bool = Depends(verify_admin),
+    db: Session = Depends(get_db)
+):
+    """删除评价（管理员权限）"""
+    try:
+        review = db.query(Review).filter(Review.id == review_id).first()
+        if not review:
+            raise HTTPException(status_code=404, detail="评价不存在")
+        
+        product_id = review.product_id
+        db.delete(review)
+        db.commit()
+        
+        # 更新商品平均评分（重新计算该商品的平均评分）
+        from sqlalchemy import func
+        result = db.query(func.avg(Review.rating)).filter(
+            Review.product_id == product_id,
+            Review.status == "approved"
+        ).scalar()
+        
+        # 这里可以更新商品表的 average_rating 字段（如果存在）
+        # 当前方案是在查询时动态计算
+        
+        return {"status": "ok", "message": "评价已删除"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"删除评价失败: {str(e)}")
 
 @admin_router.get("/memberships", response_model=list[schemas.MembershipRead])
 def admin_list_memberships(_: bool = Depends(verify_admin), db: Session = Depends(get_db)):

@@ -82,7 +82,7 @@ def list_reviews(product_id: Optional[int] = None, user_id: Optional[int] = None
         query = query.filter(Review.product_id == product_id)
     if user_id:
         query = query.filter(Review.user_id == user_id)
-    if status:
+    if status and status.strip():  # 只有当 status 不为空时才筛选
         query = query.filter(Review.status == status)
     
     total = query.count()

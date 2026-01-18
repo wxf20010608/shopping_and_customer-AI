@@ -2,7 +2,7 @@
 知识库管理路由（管理员接口）
 """
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy.orm import Session
 import os
@@ -14,7 +14,7 @@ from ..services.rag_service import get_rag_service
 from ..models import KnowledgeDocument, KnowledgeChunk
 from ..admin_router import verify_admin
 
-router = APIRouter(prefix="/knowledge-base", tags=["knowledge-base"])
+router = APIRouter(prefix="/admin/knowledge-base", tags=["knowledge-base"])
 
 
 @router.post("/documents", response_model=schemas.KnowledgeDocumentRead, status_code=status.HTTP_201_CREATED)
@@ -42,15 +42,16 @@ def create_document(
 
 @router.get("/documents", response_model=List[schemas.KnowledgeDocumentRead])
 def list_documents(
-    category: Optional[str] = None,
-    active: Optional[bool] = None,
+    category: Optional[str] = Query(None, description="分类筛选"),
+    active: Optional[bool] = Query(None, description="筛选状态：true=有效，false=无效，不传=全部"),
     _: bool = Depends(verify_admin),
     db: Session = Depends(get_db)
 ):
     """获取知识库文档列表"""
     query = db.query(KnowledgeDocument)
-    if category:
-        query = query.filter(KnowledgeDocument.category == category)
+    if category and category.strip():
+        query = query.filter(KnowledgeDocument.category == category.strip())
+    # 只有当 active 是明确的布尔值时才筛选
     if active is not None:
         query = query.filter(KnowledgeDocument.active == active)
     return query.order_by(KnowledgeDocument.id.desc()).all()

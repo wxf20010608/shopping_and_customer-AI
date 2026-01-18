@@ -31,6 +31,7 @@ services:
       - ./backend/smart_mall.db:/app/smart_mall.db
       - ./backend/knowledge_base_index.faiss:/app/knowledge_base_index.faiss
       - ./backend/app/static/uploads:/app/app/static/uploads
+      - ./backend/logs:/app/logs
     depends_on:
       redis:
         condition: service_healthy

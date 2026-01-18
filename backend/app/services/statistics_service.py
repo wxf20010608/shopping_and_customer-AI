@@ -52,29 +52,39 @@ class StatisticsService:
             Coupon.active == True
         ).scalar()
         
+        # 热门商品（销量前5）
+        top_5_products_query = (
+            db.query(
+                Product.name,
+                func.sum(OrderItem.quantity).label("quantity_sold")
+            )
+            .join(OrderItem, Product.id == OrderItem.product_id)
+            .join(Order, OrderItem.order_id == Order.id)
+            .filter(Order.status.in_(["paid", "shipped", "completed"]))
+            .group_by(Product.id, Product.name)
+            .order_by(func.sum(OrderItem.quantity).desc())
+            .limit(5)
+            .all()
+        )
+        
+        top_5_products = [
+            {"name": p.name, "quantity_sold": p.quantity_sold or 0}
+            for p in top_5_products_query
+        ]
+        
+        # 近7天订单量
+        seven_days_ago = today - timedelta(days=7)
+        recent_orders_7_days = db.query(func.count(Order.id)).filter(
+            func.date(Order.created_at) >= seven_days_ago
+        ).scalar()
+        
         return {
-            "orders": {
-                "total": total_orders,
-                "today": today_orders,
-                "revenue": {
-                    "total": round(total_revenue, 2),
-                    "today": round(today_revenue, 2)
-                }
-            },
-            "users": {
-                "total": total_users,
-                "new_today": new_users_today
-            },
-            "products": {
-                "total": total_products,
-                "low_stock": low_stock_products
-            },
-            "reviews": {
-                "total": total_reviews
-            },
-            "coupons": {
-                "active": total_coupons
-            }
+            "total_users": total_users,
+            "total_products": total_products,
+            "total_orders": total_orders,
+            "total_sales_amount": round(total_revenue, 2),
+            "recent_orders_7_days": recent_orders_7_days,
+            "top_5_products": top_5_products
         }
     
     def get_sales_statistics(self, db: Session, days: int = 30) -> Dict:
@@ -97,19 +107,30 @@ class StatisticsService:
             .all()
         )
         
-        daily_data = []
+        data = []
         for stat in daily_stats:
-            daily_data.append({
-                "date": stat.date.isoformat() if stat.date else None,
-                "order_count": stat.order_count,
-                "revenue": round(stat.revenue or 0.0, 2)
+            # 处理日期：可能是 date 对象或字符串
+            date_str = None
+            if stat.date:
+                if isinstance(stat.date, str):
+                    date_str = stat.date
+                elif hasattr(stat.date, 'isoformat'):
+                    date_str = stat.date.isoformat()
+                else:
+                    # 尝试转换为字符串
+                    date_str = str(stat.date)
+            
+            data.append({
+                "date": date_str,
+                "orders": stat.order_count,
+                "amount": round(stat.revenue or 0.0, 2)
             })
         
         return {
             "period_days": days,
             "start_date": start_date.isoformat(),
             "end_date": datetime.utcnow().date().isoformat(),
-            "daily_data": daily_data
+            "data": data
         }
     
     def get_product_statistics(self, db: Session) -> Dict:
@@ -136,10 +157,10 @@ class StatisticsService:
         for prod in top_products:
             top_products_data.append({
                 "product_id": prod.id,
-                "product_name": prod.name,
+                "name": prod.name,
                 "category": prod.category,
-                "total_sold": prod.total_sold or 0,
-                "total_revenue": round(prod.total_revenue or 0.0, 2)
+                "quantity_sold": prod.total_sold or 0,
+                "sales_amount": round(prod.total_revenue or 0.0, 2)
             })
         
         # 按分类统计
@@ -196,7 +217,25 @@ class StatisticsService:
         # 活跃用户（有订单的用户）
         active_users = db.query(func.count(func.distinct(Order.user_id))).scalar()
         
+        # 总用户数
+        total_users = db.query(func.count(User.id)).scalar()
+        
+        # 今日新增用户
+        today = datetime.utcnow().date()
+        new_users_today = db.query(func.count(User.id)).filter(
+            func.date(User.created_at) == today
+        ).scalar()
+        
+        # 近7天活跃用户（有订单的用户）
+        seven_days_ago = today - timedelta(days=7)
+        active_users_7_days = db.query(func.count(func.distinct(Order.user_id))).filter(
+            func.date(Order.created_at) >= seven_days_ago
+        ).scalar()
+        
         return {
+            "total_users": total_users,
+            "new_users_today": new_users_today,
+            "active_users_7_days": active_users_7_days,
             "monthly_registrations": monthly_data,
             "active_users": active_users
         }
