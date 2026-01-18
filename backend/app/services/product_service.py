@@ -6,6 +6,7 @@ from sqlalchemy import func, text
 
 from .. import schemas
 from ..models import Product, Category
+from .cache_service import get_cache_service
 import random
 import uuid
 import hashlib
@@ -50,6 +51,7 @@ def _generate_image_url_from_name(name: str, category: Optional[str] = None, pro
 
 def create_product(payload: schemas.ProductCreate, db: Session) -> Product:
     product_data = payload.model_dump()
+    cache = get_cache_service()
     # 如果没有提供图片URL，先创建商品获取ID，然后根据商品名称和ID生成图片
     if not product_data.get('image_url'):
         # 先创建商品以获取ID
@@ -65,13 +67,15 @@ def create_product(payload: schemas.ProductCreate, db: Session) -> Product:
         )
         db.commit()
         db.refresh(product)
-        return product
     else:
         product = Product(**product_data)
         db.add(product)
         db.commit()
         db.refresh(product)
-        return product
+    # 清除相关缓存
+    cache.delete_categories()
+    cache.delete_pattern("product:list:*")
+    return product
 
 
 # 修改：增加 category 精确筛选，并支持分页
@@ -83,6 +87,7 @@ def create_product(payload: schemas.ProductCreate, db: Session) -> Product:
 def list_products(search: Optional[str], category: Optional[str], db: Session, page: int = 1, page_size: int = 10, random_order: bool = True) -> schemas.ProductPage:
     """
     获取商品列表（支持随机排序，保证每次刷新顺序不同）
+    集成 Redis 缓存优化性能
     
     参数:
     - search: 搜索关键词
@@ -91,6 +96,15 @@ def list_products(search: Optional[str], category: Optional[str], db: Session, p
     - page_size: 每页数量
     - random_order: 是否随机排序（默认True，每次刷新顺序不同）
     """
+    cache = get_cache_service()
+    
+    # 随机排序时不使用缓存（因为每次结果不同）
+    if not random_order and not search:
+        # 尝试从缓存获取
+        cached = cache.get_product_list(search, category, page, page_size)
+        if cached:
+            return schemas.ProductPage(**cached)
+    
     query = db.query(Product)
     if search:
         like_pattern = f"%{search}%"
@@ -133,10 +147,25 @@ def list_products(search: Optional[str], category: Optional[str], db: Session, p
         for item in items:
             db.refresh(item)
     
-    return schemas.ProductPage(items=items, total=total, page=max(page, 1), page_size=max(page_size, 1))
+    result = schemas.ProductPage(items=items, total=total, page=max(page, 1), page_size=max(page_size, 1))
+    
+    # 缓存结果（仅在非随机排序且无搜索时）
+    if not random_order and not search:
+        cache.cache_product_list(search, category, page, page_size, result.model_dump())
+    
+    return result
 
 
 def get_product(product_id: int, db: Session) -> Product:
+    cache = get_cache_service()
+    
+    # 尝试从缓存获取
+    cached = cache.get_product(product_id)
+    if cached:
+        # 构建 Product 对象（从字典）
+        product = Product(**cached)
+        return product
+    
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="商品不存在")
@@ -145,6 +174,20 @@ def get_product(product_id: int, db: Session) -> Product:
         product.image_url = _generate_image_url_from_name(product.name, product.category, product.id)
         db.commit()
         db.refresh(product)
+    
+    # 缓存商品信息（序列化为字典）
+    cache.cache_product(product_id, {
+        "id": product.id,
+        "name": product.name,
+        "description": product.description,
+        "price": product.price,
+        "stock": product.stock,
+        "category": product.category,
+        "image_url": product.image_url,
+        "created_at": product.created_at.isoformat() if product.created_at else None,
+        "updated_at": product.updated_at.isoformat() if product.updated_at else None,
+    })
+    
     return product
 
 
@@ -284,8 +327,20 @@ def seed_products(count: int, db: Session) -> List[Product]:
 
 # 新增：返回类别表中的分类列表（按名称）
 def list_categories(db: Session) -> List[str]:
+    cache = get_cache_service()
+    
+    # 尝试从缓存获取
+    cached = cache.get_categories()
+    if cached:
+        return cached
+    
     rows = db.query(Category.name).order_by(Category.name.asc()).all()
-    return [r[0] for r in rows if r and r[0]]
+    categories = [r[0] for r in rows if r and r[0]]
+    
+    # 缓存分类列表
+    cache.cache_categories(categories)
+    
+    return categories
 
 
 def get_customer_service(product_id: int, db: Session) -> schemas.CustomerServiceResponse:

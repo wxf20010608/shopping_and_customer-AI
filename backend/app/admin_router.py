@@ -280,6 +280,37 @@ def admin_assign_coupon_bulk(coupon_id: int, payload: dict, _: bool = Depends(ve
     db.commit()
     return {"status":"ok", "assigned_count": len(user_ids)}
 
+@admin_router.get("/coupons/auto-issue/rules")
+def admin_get_auto_issue_rules(_: bool = Depends(verify_admin)):
+    """获取优惠券自动发放规则配置"""
+    try:
+        from ..services.coupon_auto_issue_service import get_auto_issue_service
+        auto_issue_service = get_auto_issue_service()
+        return {
+            "enabled": auto_issue_service.enabled,
+            "rules": auto_issue_service.rules,
+            "config": {
+                "COUPON_AUTO_ISSUE_ENABLED": auto_issue_service.enabled,
+                "COUPON_AUTO_ISSUE_NEW_USER_COUPON_ID": os.environ.get("COUPON_AUTO_ISSUE_NEW_USER_COUPON_ID"),
+                "COUPON_AUTO_ISSUE_FIRST_ORDER_COUPON_ID": os.environ.get("COUPON_AUTO_ISSUE_FIRST_ORDER_COUPON_ID"),
+            }
+        }
+    except Exception as e:
+        return {"enabled": False, "error": str(e)}
+
+@admin_router.post("/coupons/auto-issue/config")
+def admin_set_auto_issue_config(payload: dict, _: bool = Depends(verify_admin)):
+    """配置优惠券自动发放规则"""
+    try:
+        import os
+        if "COUPON_AUTO_ISSUE_NEW_USER_COUPON_ID" in payload:
+            os.environ["COUPON_AUTO_ISSUE_NEW_USER_COUPON_ID"] = str(payload["COUPON_AUTO_ISSUE_NEW_USER_COUPON_ID"])
+        if "COUPON_AUTO_ISSUE_FIRST_ORDER_COUPON_ID" in payload:
+            os.environ["COUPON_AUTO_ISSUE_FIRST_ORDER_COUPON_ID"] = str(payload["COUPON_AUTO_ISSUE_FIRST_ORDER_COUPON_ID"])
+        return {"status": "ok", "message": "配置已更新"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"配置更新失败: {str(e)}")
+
 @admin_router.get("/memberships", response_model=list[schemas.MembershipRead])
 def admin_list_memberships(_: bool = Depends(verify_admin), db: Session = Depends(get_db)):
     return db.query(Membership).order_by(Membership.id.desc()).all()

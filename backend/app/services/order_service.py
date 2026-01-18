@@ -166,6 +166,26 @@ def create_order(user_id: int, payload: schemas.OrderCreate, db: Session) -> Ord
         used_user_coupon.used_order_id = order.id
         db.add(used_user_coupon)
         db.commit()
+    
+    # 首次购买自动发放优惠券
+    try:
+        from .coupon_auto_issue_service import get_auto_issue_service
+        auto_issue_service = get_auto_issue_service()
+        # 获取首次购买自动发放的优惠券ID（可通过环境变量配置）
+        import os
+        first_order_coupon_id = os.environ.get("COUPON_AUTO_ISSUE_FIRST_ORDER_COUPON_ID")
+        if first_order_coupon_id and auto_issue_service.enabled:
+            try:
+                coupon_id = int(first_order_coupon_id)
+                # 检查是否为首单（订单数量为1，因为刚创建的订单就是第一个）
+                order_count = db.query(Order).filter(Order.user_id == user_id).count()
+                if order_count == 1:
+                    auto_issue_service.issue_to_first_order_user(db, user_id, coupon_id)
+            except (ValueError, Exception) as e:
+                print(f"⚠ 首次购买自动发放优惠券失败: {e}")
+    except Exception as e:
+        print(f"⚠ 自动发放服务未启用或出错: {e}")
+    
     return (
         db.query(Order)
         .options(

@@ -12,9 +12,11 @@
 
 - **框架**: FastAPI 0.121.2
 - **数据库**: SQLite (使用 SQLAlchemy ORM)
+- **缓存**: Redis (性能优化，缓存商品列表、商品详情、分类等)
 - **认证**: Passlib (bcrypt 密码加密)
 - **文件处理**: Pillow (图片处理), PyMuPDF (PDF 处理), pytesseract (OCR), PaddleOCR (OCR), pdfplumber (PDF解析), python-docx (Word解析), openpyxl/xlrd (Excel解析)
 - **RAG 向量检索**: FAISS (向量数据库), sentence-transformers (文本嵌入), rank-bm25 (关键词检索), jieba (中文分词)
+- **定时任务**: APScheduler (优惠券自动发放定时任务)
 - **服务器**: Uvicorn
 
 ### 前端技术
@@ -184,37 +186,192 @@ Shopping_app/
 
 ### Docker 部署（推荐）
 
-在项目根目录执行：
+#### 前置要求
+
+1. **安装 Docker**：
+
+   - Windows: 下载并安装 [Docker Desktop](https://www.docker.com/products/docker-desktop)
+   - Linux: 使用包管理器安装 Docker 和 Docker Compose
+   - Mac: 下载并安装 [Docker Desktop](https://www.docker.com/products/docker-desktop)
+2. **验证 Docker 安装**：
+
+   ```bash
+   # 检查 Docker 版本
+   docker --version
+
+   # 检查 Docker Compose 版本
+   docker compose version
+   ```
+
+#### 部署步骤
+
+**第一步：准备环境变量（可选）**
+
+如需配置管理员账户或 AI API Key，可在 `backend/.env` 文件中设置：
 
 ```bash
+# backend/.env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your_password
+MODEL_API_KEY=your_dashscope_api_key
+```
+
+**第二步：构建并启动容器**
+
+在项目根目录（包含 `docker-compose.yml` 的目录）执行：
+
+```bash
+# 构建镜像并启动容器（后台运行）
 docker compose up -d --build
 ```
 
-启动后访问：
+**首次构建可能需要较长时间**（下载依赖、构建镜像等），请耐心等待。
 
-- 前端页面：`http://localhost`
-- 管理员后台：`http://localhost/admin`（默认用户名：`admin`，密码：`123456`）
-- 后端 API：`http://localhost/api`（通过 Nginx 反向代理）
+**查看构建日志**：
 
-停止服务：
+```bash
+# 查看所有服务日志
+docker compose logs -f
+
+# 只查看后端日志
+docker compose logs -f backend
+
+# 只查看前端日志
+docker compose logs -f web
+```
+
+**第三步：验证服务**
+
+等待服务启动后（通常需要 1-3 分钟），访问：
+
+- **前端页面**：`http://localhost` 或 `http://127.0.0.1`
+- **管理员后台**：`http://localhost/admin`（默认用户名：`admin`，密码：`123456`）
+- **后端 API 文档**：`http://localhost/api/docs`（通过 Nginx 代理）
+
+#### 常用操作命令
+
+**查看运行状态**：
+
+```bash
+docker compose ps
+```
+
+**停止服务**：
 
 ```bash
 docker compose down
 ```
 
-**数据持久化位置**：
+**停止并删除数据卷（谨慎操作）**：
 
-- SQLite 数据库：`backend/smart_mall.db`
-- 上传文件：`backend/app/static/uploads/`
-- 知识库索引：`backend/knowledge_base_index.faiss`
+```bash
+docker compose down -v
+```
 
-**Docker 环境变量**：
+**重启服务**：
 
-可在 `docker-compose.yml` 中配置环境变量，或通过 `.env` 文件传递给容器：
-- `ADMIN_USERNAME` - 管理员用户名（默认：admin）
-- `ADMIN_PASSWORD` - 管理员密码（默认：123456）
-- `MODEL_API_KEY` - 通义千问 API Key（用于客服聊天）
-- 其他 RAG 相关配置可通过 `backend/.env` 文件配置
+```bash
+docker compose restart
+```
+
+**重新构建镜像**（代码更新后）：
+
+```bash
+docker compose up -d --build
+```
+
+**查看容器日志**：
+
+```bash
+# 查看所有容器日志
+docker compose logs -f
+
+# 查看特定容器日志
+docker compose logs -f backend
+docker compose logs -f web
+```
+
+**进入容器内部**：
+
+```bash
+# 进入后端容器
+docker compose exec backend bash
+
+# 进入前端容器（nginx）
+docker compose exec web sh
+```
+
+#### 数据持久化
+
+以下文件/目录会自动映射到宿主机，数据不会丢失：
+
+- **SQLite 数据库**：`./backend/smart_mall.db` → `/app/smart_mall.db`
+- **上传文件**：`./backend/app/static/uploads/` → `/app/app/static/uploads/`
+- **知识库索引**：`./backend/knowledge_base_index.faiss` → `/app/knowledge_base_index.faiss`
+
+#### 配置说明
+
+**端口映射**：
+
+- 前端（Nginx）：`80:80`（宿主机 80 端口 → 容器 80 端口）
+- 后端（FastAPI）：`8000`（仅在容器内部暴露，通过 Nginx 反向代理访问）
+
+**环境变量**（可在 `docker-compose.yml` 中修改）：
+
+```yaml
+environment:
+  - ADMIN_USERNAME=admin          # 管理员用户名
+  - ADMIN_PASSWORD=123456         # 管理员密码
+```
+
+**其他环境变量**（AI API Key、RAG 配置等）需要在 `backend/.env` 文件中配置。
+
+#### 故障排查
+
+**问题 1：端口 80 被占用**
+
+```bash
+# Windows 查看端口占用
+netstat -ano | findstr :80
+
+# Linux/Mac 查看端口占用
+lsof -i :80
+```
+
+解决方案：修改 `docker-compose.yml` 中的端口映射：
+
+```yaml
+ports:
+  - "8080:80"  # 改为 8080 端口
+```
+
+**问题 2：容器无法启动**
+
+查看详细日志：
+
+```bash
+docker compose logs backend
+docker compose logs web
+```
+
+**问题 3：数据库文件权限问题（Linux/Mac）**
+
+确保文件权限正确：
+
+```bash
+chmod 644 backend/smart_mall.db
+chmod -R 755 backend/app/static/uploads/
+```
+
+**问题 4：需要清理所有数据重新开始**
+
+```bash
+# 停止并删除容器、网络、数据卷
+docker compose down -v
+
+# 删除镜像（可选）
+docker rmi smart_mall_backend smart_mall_web
+```
 
 ### 后端设置
 
@@ -450,6 +607,11 @@ cp backend/smart_mall.db backend/smart_mall_backup_$(date +%Y%m%d_%H%M%S).db
 - 优惠券领取
 - 优惠券在订单中使用
 - 支持商品特定优惠券
+- **优惠券自动发放**：
+  - 新用户注册自动发放（可配置）
+  - 首次购买自动发放（可配置）
+  - 定时任务支持（每日检查、生日等）
+  - 管理员后台配置自动发放规则
 
 ### 客服聊天
 
@@ -520,12 +682,14 @@ cp backend/smart_mall.db backend/smart_mall_backup_$(date +%Y%m%d_%H%M%S).db
 可在 `backend/.env` 文件中配置以下环境变量：
 
 #### 管理员认证
+
 ```bash
 ADMIN_USERNAME=admin          # 管理员用户名（默认：admin）
 ADMIN_PASSWORD=123456         # 管理员密码（默认：123456）
 ```
 
 #### AI 模型配置（客服聊天）
+
 ```bash
 MODEL_API_KEY=your_api_key                    # 通义千问 API Key（必需）
 DASHSCOPE_API_KEY=your_api_key                # DashScope API Key（备用）
@@ -538,6 +702,7 @@ MODEL_MAX_LENGTH=2048                         # 最大输出长度
 ```
 
 #### RAG 知识库配置
+
 ```bash
 RAG_EMBEDDING_MODEL=BAAI/bge-large-zh-v1.5    # 嵌入模型（支持中文/英文/多语言）
 RAG_CHUNK_SIZE=500                            # 文档分块大小（字符数）
@@ -550,6 +715,7 @@ RAG_HYBRID_WEIGHT_BM25=0.3                    # BM25检索权重
 ```
 
 #### PDF 处理配置
+
 ```bash
 PDF_MAX_PAGES=20                              # PDF 最大处理页数
 PDF_MAX_CHARS=20000                           # PDF 最大字符数
@@ -557,9 +723,28 @@ TESSERACT_CMD=C:/Program Files/Tesseract-OCR/tesseract.exe  # Tesseract OCR 路�
 ```
 
 #### 聊天历史配置
+
 ```bash
 CHAT_HISTORY_LIMIT_MAX=5000                   # 聊天历史最大消息数
 CHAT_GROUP_THRESHOLD_MS=15000                 # 消息分组时间阈值（毫秒）
+```
+
+#### Redis 缓存配置
+
+```bash
+REDIS_ENABLED=true                            # 是否启用 Redis 缓存（默认：true）
+REDIS_HOST=localhost                          # Redis 服务器地址（默认：localhost）
+REDIS_PORT=6379                               # Redis 端口（默认：6379）
+REDIS_DB=0                                    # Redis 数据库编号（默认：0）
+REDIS_PASSWORD=                               # Redis 密码（可选）
+```
+
+#### 优惠券自动发放配置
+
+```bash
+COUPON_AUTO_ISSUE_ENABLED=true                # 是否启用优惠券自动发放（默认：true）
+COUPON_AUTO_ISSUE_NEW_USER_COUPON_ID=         # 新用户注册自动发放的优惠券ID（可选）
+COUPON_AUTO_ISSUE_FIRST_ORDER_COUPON_ID=      # 首次购买自动发放的优惠券ID（可选）
 ```
 
 5. **商品图片自动生成**:
@@ -583,9 +768,9 @@ CHAT_GROUP_THRESHOLD_MS=15000                 # 消息分组时间阈值（毫�
 - [ ] 添加商品推荐算法
 - [ ] 实现邮件通知功能
 - [ ] 添加商品库存预警
-- [ ] 实现优惠券自动发放机制
+- [x] 实现优惠券自动发放机制（新用户注册、首次购买等）
 - [ ] 添加数据统计和分析功能
-- [ ] 实现 Redis 缓存优化性能
+- [x] 实现 Redis 缓存优化性能（商品列表、商品详情、分类等）
 - [ ] 添加单元测试和集成测试
 - [x] 实现 Docker 容器化部署（含 Nginx 反向代理）
 

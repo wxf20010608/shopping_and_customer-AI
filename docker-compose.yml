@@ -1,6 +1,20 @@
 version: "3.9"
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: smart_mall_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -8,10 +22,18 @@ services:
     environment:
       - ADMIN_USERNAME=admin
       - ADMIN_PASSWORD=123456
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_ENABLED=true
+      - COUPON_AUTO_ISSUE_ENABLED=true
     volumes:
       - ./backend/smart_mall.db:/app/smart_mall.db
       - ./backend/knowledge_base_index.faiss:/app/knowledge_base_index.faiss
       - ./backend/app/static/uploads:/app/app/static/uploads
+    depends_on:
+      redis:
+        condition: service_healthy
     expose:
       - "8000"
 
@@ -23,3 +45,6 @@ services:
       - backend
     ports:
       - "80:80"
+
+volumes:
+  redis_data:

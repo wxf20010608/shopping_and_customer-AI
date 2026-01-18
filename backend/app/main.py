@@ -93,9 +93,46 @@ def create_app() -> FastAPI:
     app.include_router(knowledge_base_route.router)  # 知识库管理路由（管理员接口）
     app.include_router(admin_router)
 
+    # 初始化优惠券自动发放服务
+    try:
+        from .services.coupon_auto_issue_service import get_auto_issue_service
+        from .database import get_db
+        
+        auto_issue_service = get_auto_issue_service()
+        if auto_issue_service.enabled and auto_issue_service.scheduler:
+            # 设置定时任务（每日检查）
+            def get_db_session():
+                from .database import SessionLocal
+                return SessionLocal()
+            
+            auto_issue_service.schedule_daily_check(get_db_session)
+            print("✓ 优惠券自动发放定时任务已启动")
+    except Exception as e:
+        print(f"⚠ 优惠券自动发放服务初始化失败: {e}")
+    
+    # 初始化 Redis 缓存服务
+    try:
+        from .services.cache_service import get_cache_service
+        cache_service = get_cache_service()
+        if cache_service.enabled:
+            print("✓ Redis 缓存服务已初始化")
+    except Exception as e:
+        print(f"⚠ Redis 缓存服务初始化失败: {e}")
+
     @app.get("/")
     def read_root():
         return {"message": "智慧商城后端服务运行中"}
+
+    @app.on_event("shutdown")
+    def shutdown_event():
+        """应用关闭时清理资源"""
+        try:
+            from .services.coupon_auto_issue_service import get_auto_issue_service
+            auto_issue_service = get_auto_issue_service()
+            if auto_issue_service:
+                auto_issue_service.shutdown()
+        except Exception:
+            pass
 
     return app
 

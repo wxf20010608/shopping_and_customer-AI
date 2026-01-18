@@ -25,6 +25,23 @@ def register_user(payload: schemas.UserCreate, db: Session) -> User:
     user_repository.create_user_cart(db, user.id)
     db.commit()
     db.refresh(user)
+    
+    # 新用户自动发放优惠券
+    try:
+        from .coupon_auto_issue_service import get_auto_issue_service
+        auto_issue_service = get_auto_issue_service()
+        # 获取新用户注册自动发放的优惠券ID（可通过环境变量配置）
+        import os
+        new_user_coupon_id = os.environ.get("COUPON_AUTO_ISSUE_NEW_USER_COUPON_ID")
+        if new_user_coupon_id and auto_issue_service.enabled:
+            try:
+                coupon_id = int(new_user_coupon_id)
+                auto_issue_service.issue_to_new_user(db, user.id, coupon_id)
+            except (ValueError, Exception) as e:
+                print(f"⚠ 新用户自动发放优惠券失败: {e}")
+    except Exception as e:
+        print(f"⚠ 自动发放服务未启用或出错: {e}")
+    
     return user
 
 
