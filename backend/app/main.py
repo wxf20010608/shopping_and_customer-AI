@@ -13,7 +13,7 @@ from .routers import (
     users_route,
 )
 from .routers import addresses_route, memberships_route, coupons_route, customer_service_route
-from .routers import knowledge_base_route
+from .routers import knowledge_base_route, reviews_route
 from .admin_router import admin_router
 
 
@@ -45,6 +45,13 @@ def create_app() -> FastAPI:
         ccols = {r[1] for r in conn.exec_driver_sql("PRAGMA table_info(coupons)").fetchall()}
         if "allowed_product_id" not in ccols:
             conn.exec_driver_sql("ALTER TABLE coupons ADD COLUMN allowed_product_id INTEGER")
+        
+        # 检查并创建 reviews 表（商品评价）
+        try:
+            rcols = {r[1] for r in conn.exec_driver_sql("PRAGMA table_info(reviews)").fetchall()}
+        except Exception:
+            rcols = set()
+        # 如果表不存在，会在首次创建时自动创建（通过 SQLAlchemy Base.metadata.create_all）
         
         # 检查并更新 knowledge_documents 表
         try:
@@ -91,6 +98,7 @@ def create_app() -> FastAPI:
     app.include_router(coupons_route.router)
     app.include_router(customer_service_route.router)
     app.include_router(knowledge_base_route.router)  # 知识库管理路由（管理员接口）
+    app.include_router(reviews_route.router)  # 商品评价路由
     app.include_router(admin_router)
 
     # 初始化优惠券自动发放服务

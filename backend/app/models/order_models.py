@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .product_models import Product
     from .shipping_models import ShippingInfo
     from .user_models import User
+    from .review_models import Review
 
 
 class OrderStatusEnum(str, PyEnum):
@@ -54,6 +55,7 @@ class Order(Base, TimestampMixin):
     shipping: Mapped["ShippingInfo"] = relationship(
         back_populates="order", uselist=False, cascade="all, delete-orphan"
     )
+    reviews: Mapped[List["Review"]] = relationship(back_populates="order")
 
 
 class OrderItem(Base, TimestampMixin):

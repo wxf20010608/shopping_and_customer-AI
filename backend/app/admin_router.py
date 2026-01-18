@@ -1,5 +1,5 @@
 # backend/app/admin_router.py
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Request
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Request, Query
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import func
@@ -8,6 +8,9 @@ import os, secrets
 from .database import get_db
 from . import schemas
 from .models import Product, Order, OrderItem, CartItem, Cart, OrderStatusEnum, ShippingStatusEnum, ShippingInfo, User, Category, Coupon, UserCoupon, Membership, MembershipPlan, MembershipCard, ChatMessage
+from .services.statistics_service import get_statistics_service
+from .services.stock_alert_service import get_stock_alert_service
+from .services.coupon_auto_issue_service import get_auto_issue_service
 
 security = HTTPBasic()
 
@@ -284,7 +287,6 @@ def admin_assign_coupon_bulk(coupon_id: int, payload: dict, _: bool = Depends(ve
 def admin_get_auto_issue_rules(_: bool = Depends(verify_admin)):
     """获取优惠券自动发放规则配置"""
     try:
-        from ..services.coupon_auto_issue_service import get_auto_issue_service
         auto_issue_service = get_auto_issue_service()
         return {
             "enabled": auto_issue_service.enabled,
@@ -310,6 +312,70 @@ def admin_set_auto_issue_config(payload: dict, _: bool = Depends(verify_admin)):
         return {"status": "ok", "message": "配置已更新"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"配置更新失败: {str(e)}")
+
+# 数据统计接口
+@admin_router.get("/statistics/dashboard")
+def admin_get_dashboard_stats(_: bool = Depends(verify_admin), db: Session = Depends(get_db)):
+    """获取仪表板统计数据"""
+    try:
+        stats_service = get_statistics_service()
+        return stats_service.get_dashboard_stats(db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取统计数据失败: {str(e)}")
+
+@admin_router.get("/statistics/sales")
+def admin_get_sales_statistics(
+    days: int = Query(30, ge=1, le=365, description="统计天数"),
+    _: bool = Depends(verify_admin),
+    db: Session = Depends(get_db)
+):
+    """获取销售统计（按日期）"""
+    try:
+        stats_service = get_statistics_service()
+        return stats_service.get_sales_statistics(db, days)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取销售统计失败: {str(e)}")
+
+@admin_router.get("/statistics/products")
+def admin_get_product_statistics(_: bool = Depends(verify_admin), db: Session = Depends(get_db)):
+    """获取商品销售统计"""
+    try:
+        stats_service = get_statistics_service()
+        return stats_service.get_product_statistics(db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取商品统计失败: {str(e)}")
+
+@admin_router.get("/statistics/users")
+def admin_get_user_statistics(_: bool = Depends(verify_admin), db: Session = Depends(get_db)):
+    """获取用户统计"""
+    try:
+        stats_service = get_statistics_service()
+        return stats_service.get_user_statistics(db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取用户统计失败: {str(e)}")
+
+# 库存预警接口
+@admin_router.get("/stock-alerts")
+def admin_get_stock_alerts(
+    threshold: int = Query(10, ge=0, description="预警阈值"),
+    _: bool = Depends(verify_admin),
+    db: Session = Depends(get_db)
+):
+    """获取库存预警列表"""
+    try:
+        alert_service = get_stock_alert_service()
+        return {"alerts": alert_service.check_low_stock_products(db, threshold)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取库存预警失败: {str(e)}")
+
+@admin_router.get("/stock-alerts/statistics")
+def admin_get_stock_statistics(_: bool = Depends(verify_admin), db: Session = Depends(get_db)):
+    """获取库存统计"""
+    try:
+        alert_service = get_stock_alert_service()
+        return alert_service.get_stock_statistics(db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取库存统计失败: {str(e)}")
 
 @admin_router.get("/memberships", response_model=list[schemas.MembershipRead])
 def admin_list_memberships(_: bool = Depends(verify_admin), db: Session = Depends(get_db)):

@@ -398,3 +398,47 @@ class KnowledgeDocumentFromDatabase(BaseModel):
     category: Optional[str] = None
     tags: Optional[str] = None
 
+
+# 商品评价和评分
+class ReviewCreate(BaseModel):
+    rating: float = Field(..., ge=1, le=5, description="评分，1-5分")
+    comment: Optional[str] = Field(None, max_length=1000, description="评价内容")
+    images: Optional[List[str]] = Field(None, description="评价图片URL列表")
+    order_id: Optional[int] = Field(None, description="关联订单ID（验证购买）")
+
+
+class ReviewUpdate(BaseModel):
+    rating: Optional[float] = Field(None, ge=1, le=5)
+    comment: Optional[str] = Field(None, max_length=1000)
+    images: Optional[List[str]] = None
+
+
+class ReviewRead(TimestampSchema):
+    id: int
+    user_id: int
+    product_id: int
+    order_id: Optional[int]
+    rating: float
+    comment: Optional[str]
+    images: Optional[str]  # JSON字符串
+    helpful_count: int
+    verified_purchase: bool
+    status: str
+    user: Optional["UserRead"] = None
+    product: Optional["ProductRead"] = None
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReviewPage(BaseModel):
+    items: List[ReviewRead]
+    total: int
+    page: int
+    page_size: int
+
+
+class ProductReviewStats(BaseModel):
+    avg_rating: float
+    total_reviews: int
+    rating_distribution: dict  # {1: 数量, 2: 数量, ...}
+

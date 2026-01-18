@@ -11,6 +11,7 @@ from .timestamp_models import TimestampMixin
 if TYPE_CHECKING:
     from .cart_models import CartItem
     from .order_models import OrderItem
+    from .review_models import Review
 
 
 class Product(Base, TimestampMixin):
@@ -26,6 +27,7 @@ class Product(Base, TimestampMixin):
 
     order_items: Mapped[List["OrderItem"]] = relationship(back_populates="product")
     cart_items: Mapped[List["CartItem"]] = relationship(back_populates="product")
+    reviews: Mapped[List["Review"]] = relationship(back_populates="product")
 
 
 __all__ = ["Product"]
