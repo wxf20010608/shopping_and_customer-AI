@@ -13,7 +13,8 @@
 - **框架**: FastAPI 0.121.2
 - **数据库**: SQLite (使用 SQLAlchemy ORM)
 - **认证**: Passlib (bcrypt 密码加密)
-- **文件处理**: Pillow (图片处理), PyMuPDF (PDF 处理), pytesseract (OCR)
+- **文件处理**: Pillow (图片处理), PyMuPDF (PDF 处理), pytesseract (OCR), PaddleOCR (OCR), pdfplumber (PDF解析), python-docx (Word解析), openpyxl/xlrd (Excel解析)
+- **RAG 向量检索**: FAISS (向量数据库), sentence-transformers (文本嵌入), rank-bm25 (关键词检索), jieba (中文分词)
 - **服务器**: Uvicorn
 
 ### 前端技术
@@ -65,9 +66,11 @@
 
 ### 客服功能
 
-- ✅ 在线客服聊天
+- ✅ 在线客服聊天（集成 RAG 知识库增强）
 - ✅ 文件上传（图片、PDF、音频等）
 - ✅ 消息历史记录
+- ✅ 支持多模型选择（qwen-turbo/plus/max, qwen-vl-plus/max 等）
+- ✅ 智能知识库检索（混合检索：向量相似度 + BM25 关键词）
 
 ### 管理功能
 
@@ -80,6 +83,11 @@
 - ✅ 客服聊天记录管理
 - ✅ 优惠券管理
 - ✅ 会员管理
+- ✅ **知识库管理**（RAG 知识库文档管理）
+  - 文档创建、更新、删除
+  - 支持多种格式导入（PDF、Word、Excel、文本、图片 OCR、网页 URL、数据库表）
+  - 向量索引管理（自动向量化、索引重建）
+  - 知识库搜索测试（混合检索：向量 + BM25）
 
 ## 项目结构
 
@@ -94,8 +102,14 @@ Shopping_app/
 │   │   │   ├── order_models.py
 │   │   │   ├── address_models.py
 │   │   │   ├── membership_models.py
+│   │   │   ├── membership_plan_models.py
+│   │   │   ├── membership_card_models.py
 │   │   │   ├── coupon_models.py
-│   │   │   └── chat_models.py
+│   │   │   ├── chat_models.py
+│   │   │   ├── knowledge_base_models.py
+│   │   │   ├── category_models.py
+│   │   │   ├── shipping_models.py
+│   │   │   └── timestamp_models.py
 │   │   ├── routers/           # API 路由
 │   │   │   ├── users_route.py
 │   │   │   ├── products_route.py
@@ -105,8 +119,21 @@ Shopping_app/
 │   │   │   ├── addresses_route.py
 │   │   │   ├── memberships_route.py
 │   │   │   ├── coupons_route.py
-│   │   │   └── customer_service_route.py
+│   │   │   ├── customer_service_route.py
+│   │   │   └── knowledge_base_route.py
 │   │   ├── services/          # 业务逻辑层
+│   │   │   ├── user_service.py
+│   │   │   ├── product_service.py
+│   │   │   ├── cart_service.py
+│   │   │   ├── order_service.py
+│   │   │   ├── address_service.py
+│   │   │   ├── membership_service.py
+│   │   │   ├── coupon_service.py
+│   │   │   ├── customer_service.py
+│   │   │   ├── logistics_service.py
+│   │   │   ├── rag_service.py
+│   │   │   ├── document_parser.py
+│   │   │   └── text_cleaner.py
 │   │   ├── repositories/      # 数据访问层
 │   │   ├── static/            # 静态文件（上传的图片、文件等）
 │   │   ├── database.py        # 数据库配置
@@ -114,7 +141,13 @@ Shopping_app/
 │   │   ├── admin_router.py    # 管理员路由
 │   │   └── schemas.py         # Pydantic 数据模式
 │   ├── requirements.txt       # Python 依赖
-│   └── smart_mall.db         # SQLite 数据库文件
+│   ├── smart_mall.db         # SQLite 数据库文件
+│   ├── knowledge_base_index.faiss  # FAISS 向量索引文件
+│   ├── Dockerfile            # 后端 Docker 镜像配置
+│   └── scripts/              # 工具脚本
+│       ├── init_db.py
+│       ├── check_db.py
+│       └── check_rag.py
 │
 └── frontend/                   # 前端代码
     ├── src/
@@ -134,7 +167,10 @@ Shopping_app/
     │   ├── App.vue            # 根组件
     │   └── main.js            # 入口文件
     ├── package.json           # Node.js 依赖
-    └── vite.config.js         # Vite 配置
+    ├── vite.config.js         # Vite 配置
+    ├── Dockerfile            # 前端 Docker 镜像配置
+    └── nginx/                # Nginx 配置
+        └── default.conf      # Nginx 反向代理配置
 ```
 
 ## 安装与运行
@@ -144,6 +180,41 @@ Shopping_app/
 - Python 3.8+
 - Node.js 16+
 - npm 或 yarn
+- Docker / Docker Compose（可选，推荐）
+
+### Docker 部署（推荐）
+
+在项目根目录执行：
+
+```bash
+docker compose up -d --build
+```
+
+启动后访问：
+
+- 前端页面：`http://localhost`
+- 管理员后台：`http://localhost/admin`（默认用户名：`admin`，密码：`123456`）
+- 后端 API：`http://localhost/api`（通过 Nginx 反向代理）
+
+停止服务：
+
+```bash
+docker compose down
+```
+
+**数据持久化位置**：
+
+- SQLite 数据库：`backend/smart_mall.db`
+- 上传文件：`backend/app/static/uploads/`
+- 知识库索引：`backend/knowledge_base_index.faiss`
+
+**Docker 环境变量**：
+
+可在 `docker-compose.yml` 中配置环境变量，或通过 `.env` 文件传递给容器：
+- `ADMIN_USERNAME` - 管理员用户名（默认：admin）
+- `ADMIN_PASSWORD` - 管理员密码（默认：123456）
+- `MODEL_API_KEY` - 通义千问 API Key（用于客服聊天）
+- 其他 RAG 相关配置可通过 `backend/.env` 文件配置
 
 ### 后端设置
 
@@ -235,11 +306,14 @@ npm run build
 
 ## API 配置
 
-确保前端 API 配置文件 `frontend/src/api/index.js` 中的后端地址正确：
+前端使用相对路径调用后端 API。开发环境通过 Vite 代理，生产环境通过 Nginx 反向代理：
 
 ```javascript
-const API_BASE_URL = 'http://localhost:8000'
+const http = axios.create({ baseURL: "/api" })
+const adminHttp = axios.create({ baseURL: "/adminapi" })
 ```
+
+开发环境代理配置位于 `frontend/vite.config.js`，生产环境代理配置位于 `frontend/nginx/default.conf`。
 
 ## 数据库
 
@@ -287,6 +361,9 @@ python init_db.py
 - `coupons` - 优惠券表
 - `user_coupons` - 用户优惠券关联表
 - `chat_messages` - 客服聊天消息表
+- `knowledge_documents` - 知识库文档表
+- `knowledge_chunks` - 知识库文档块表（用于向量化存储）
+- `categories` - 商品分类表
 
 ### 数据库备份
 
@@ -376,9 +453,29 @@ cp backend/smart_mall.db backend/smart_mall_backup_$(date +%Y%m%d_%H%M%S).db
 
 ### 客服聊天
 
-- 实时客服消息
+- 实时客服消息（集成 RAG 知识库增强回复）
 - 支持文本、图片、PDF、音频等多种文件类型
-- 消息历史记录
+- 消息历史记录（支持时间筛选和跳转定位）
+- 多模型支持（文本模型：qwen-turbo/plus/max；视觉模型：qwen-vl-plus/max）
+- **RAG 知识库增强**：
+  - 混合检索（向量相似度 + BM25 关键词）
+  - 自动从知识库检索相关内容并注入到 AI 提示词
+  - 自然回复（不显示"根据知识库内容"等标注）
+
+### 知识库管理（RAG）
+
+- **文档管理**：创建、查看、更新、删除知识库文档
+- **多格式导入**：
+  - 文件上传：PDF、Word、Excel、文本文件
+  - 图片 OCR：自动提取图片中的文字
+  - 网页导入：从 URL 提取网页内容
+  - 数据库导入：从数据库表提取数据
+- **向量化存储**：使用 FAISS 存储文档向量，支持快速相似度检索
+- **混合检索**：
+  - 向量检索（语义相似度）
+  - BM25 关键词检索（词匹配）
+  - 自动融合两种检索结果，提高准确率和召回率
+- **索引管理**：支持重建向量索引和 BM25 索引
 
 ### 管理员功能
 
@@ -416,7 +513,55 @@ cp backend/smart_mall.db backend/smart_mall_backup_$(date +%Y%m%d_%H%M%S).db
 1. **CORS 配置**: 后端已配置 CORS 中间件，允许跨域请求
 2. **静态文件**: 上传的文件存储在 `backend/app/static/uploads/` 目录
 3. **数据库迁移**: 项目包含自动数据库迁移逻辑，首次运行会自动创建表和字段
-4. **环境变量**: 可以通过 `.env` 文件配置环境变量（需实现 `load_env` 函数）
+4. **环境变量**: 可以通过 `.env` 文件配置环境变量（支持多个路径查找：`backend/.env`、`app/.env`、项目根目录 `.env` 等）
+
+### 环境变量配置
+
+可在 `backend/.env` 文件中配置以下环境变量：
+
+#### 管理员认证
+```bash
+ADMIN_USERNAME=admin          # 管理员用户名（默认：admin）
+ADMIN_PASSWORD=123456         # 管理员密码（默认：123456）
+```
+
+#### AI 模型配置（客服聊天）
+```bash
+MODEL_API_KEY=your_api_key                    # 通义千问 API Key（必需）
+DASHSCOPE_API_KEY=your_api_key                # DashScope API Key（备用）
+MODEL_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1  # API 基础URL
+MODEL_NAME=qwen-turbo                         # 默认文本模型
+MODEL_NAME_VL=qwen-vl-plus                    # 默认视觉模型
+MODEL_NAME_STT=qwen-audio                     # 语音转文字模型
+MODEL_TEMPERATURE=0.7                         # 模型温度参数
+MODEL_MAX_LENGTH=2048                         # 最大输出长度
+```
+
+#### RAG 知识库配置
+```bash
+RAG_EMBEDDING_MODEL=BAAI/bge-large-zh-v1.5    # 嵌入模型（支持中文/英文/多语言）
+RAG_CHUNK_SIZE=500                            # 文档分块大小（字符数）
+RAG_CHUNK_OVERLAP=50                          # 分块重叠大小
+RAG_TOP_K=5                                   # 检索 Top-K 相关文档
+RAG_SIMILARITY_THRESHOLD=0.2                  # 相似度阈值（0-1）
+RAG_USE_HYBRID_SEARCH=true                    # 是否使用混合检索（向量+BM25）
+RAG_HYBRID_WEIGHT_VECTOR=0.7                  # 向量检索权重
+RAG_HYBRID_WEIGHT_BM25=0.3                    # BM25检索权重
+```
+
+#### PDF 处理配置
+```bash
+PDF_MAX_PAGES=20                              # PDF 最大处理页数
+PDF_MAX_CHARS=20000                           # PDF 最大字符数
+TESSERACT_CMD=C:/Program Files/Tesseract-OCR/tesseract.exe  # Tesseract OCR 路径（Windows）
+```
+
+#### 聊天历史配置
+```bash
+CHAT_HISTORY_LIMIT_MAX=5000                   # 聊天历史最大消息数
+CHAT_GROUP_THRESHOLD_MS=15000                 # 消息分组时间阈值（毫秒）
+```
+
 5. **商品图片自动生成**:
    - 商品图片根据商品名称、分类和ID自动生成固定URL
    - 每个商品对应唯一且固定的图片，确保图片与商品名称一致
@@ -426,6 +571,10 @@ cp backend/smart_mall.db backend/smart_mall_backup_$(date +%Y%m%d_%H%M%S).db
    - 默认地址会自动标注并优先显示
    - 使用完整的中国行政区划数据（34个省级行政区，包含所有市、区县）
 7. **商品列表随机排序**: 商品列表默认随机排序，每次刷新页面顺序不同
+8. **RAG 知识库增强**:
+   - 客服聊天自动集成知识库检索
+   - 支持混合检索（向量相似度 + BM25 关键词），提高准确率
+   - 文档自动分块、清洗、向量化存储
 
 ## 后续开发建议
 
@@ -438,7 +587,7 @@ cp backend/smart_mall.db backend/smart_mall_backup_$(date +%Y%m%d_%H%M%S).db
 - [ ] 添加数据统计和分析功能
 - [ ] 实现 Redis 缓存优化性能
 - [ ] 添加单元测试和集成测试
-- [ ] 实现 Docker 容器化部署
+- [x] 实现 Docker 容器化部署（含 Nginx 反向代理）
 
 ## 许可证
 

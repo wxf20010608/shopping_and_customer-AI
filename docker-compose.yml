@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: smart_mall_backend
+    environment:
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=123456
+    volumes:
+      - ./backend/smart_mall.db:/app/smart_mall.db
+      - ./backend/knowledge_base_index.faiss:/app/knowledge_base_index.faiss
+      - ./backend/app/static/uploads:/app/app/static/uploads
+    expose:
+      - "8000"
+
+  web:
+    build:
+      context: ./frontend
+    container_name: smart_mall_web
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
