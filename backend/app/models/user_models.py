@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from .cart_models import Cart
     from .order_models import Order
     from .address_models import Address
+    from .review_models import Review
 
 
 class User(Base, TimestampMixin):
@@ -29,6 +30,7 @@ class User(Base, TimestampMixin):
     cart: Mapped["Cart"] = relationship(back_populates="user", uselist=False)
     addresses: Mapped[List["Address"]] = relationship(back_populates="user")
     membership: Mapped["Membership"] = relationship(back_populates="user", uselist=False)
+    reviews: Mapped[List["Review"]] = relationship(back_populates="user")
 
 
 __all__ = ["User"]

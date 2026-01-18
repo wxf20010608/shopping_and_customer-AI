@@ -12,6 +12,7 @@ from .membership_plan_models import MembershipPlan
 from .membership_card_models import MembershipCard
 from .chat_models import ChatMessage
 from .knowledge_base_models import KnowledgeDocument, KnowledgeChunk
+from .review_models import Review
 
 __all__ = [
     "Cart",
@@ -36,4 +37,5 @@ __all__ = [
     "ChatMessage",
     "KnowledgeDocument",
     "KnowledgeChunk",
+    "Review",
 ]
