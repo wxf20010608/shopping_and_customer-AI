@@ -397,11 +397,11 @@ def chat(user_id: int, product_id: Optional[int], text: str, db: Session, model_
         )
     else:
         # 如果没有使用知识库，使用常规提示词
-        system_prompt = (
-            "你是电商客服，使用简洁中文回复，支持售前/售后、物流查询、商品推荐。"
-            "优先结合系统提供的信息进行回答，无法确定时要礼貌引导。"
-            + product_info + logistics_info
-        )
+    system_prompt = (
+        "你是电商客服，使用简洁中文回复，支持售前/售后、物流查询、商品推荐。"
+        "优先结合系统提供的信息进行回答，无法确定时要礼貌引导。"
+        + product_info + logistics_info
+    )
 
     # persist user message
     umsg = None
@@ -437,7 +437,7 @@ def chat(user_id: int, product_id: Optional[int], text: str, db: Session, model_
             cleaned = []
         user_content = user_content + cleaned
     try:
-        reply = _call_qwen(system_prompt, history + [{"role": "user", "content": user_content}], model_override)
+    reply = _call_qwen(system_prompt, history + [{"role": "user", "content": user_content}], model_override)
     except HTTPException:
         raise
     except Exception as e:
