@@ -12,8 +12,14 @@ router = APIRouter(prefix="/customer-service", tags=["customer-service"])
 
 @router.post("/chat", response_model=schemas.ChatMessageRead, status_code=status.HTTP_201_CREATED)
 def chat(payload: schemas.ChatMessageCreate, db: Session = Depends(get_db)):
-    msg = customer_service.chat(payload.user_id, payload.product_id, payload.message, db, getattr(payload, "model", None))
-    return msg
+    print(f"🔵 路由层收到请求: user_id={payload.user_id}, product_id={payload.product_id}, message={payload.message[:50] if payload.message else ''}...")
+    try:
+        msg = customer_service.chat(payload.user_id, payload.product_id, payload.message, db, getattr(payload, "model", None))
+        print(f"✅ 路由层返回消息: id={msg.id}")
+        return msg
+    except Exception as e:
+        print(f"❌ 路由层异常: {type(e).__name__}: {str(e)}")
+        raise
 
 
 @router.get("/history/{user_id}/{product_id}", response_model=schemas.ChatHistoryRead)

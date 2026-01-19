@@ -16,7 +16,7 @@ export const api = {
     const params = { page, page_size: pageSize };
     if (search) params.search = search;
     if (category) params.category = category;
-    return http.get("/products", { params });
+    return http.get("/products/", { params });
   },
   getCategories() {
     return http.get("/products/categories");
