@@ -2,7 +2,7 @@ import axios from "axios";
 
 const http = axios.create({
   baseURL: "/api",
-  timeout: 8000,
+  timeout: 180000, // 增加到 180 秒（3分钟），用于 AI 模型调用
 });
 const adminHttp = axios.create({
   baseURL: "/adminapi",
@@ -65,7 +65,7 @@ export const api = {
   sendChat(userId, productId, message, model){
     const payload = { user_id: userId, product_id: productId, message }
     if (model) payload.model = model
-    return http.post(`/customer-service/chat`, payload, { timeout: 120000 }) // 120秒超时，因为AI回复可能需要较长时间
+    return http.post(`/customer-service/chat`, payload, { timeout: 300000 }) // 5分钟超时，首次加载RAG模型需要较长时间
   },
   getChatHistory(userId, productId, { start, end, limit } = {}){
     const params = {}
@@ -117,7 +117,7 @@ export const api = {
     files.forEach(f => fd.append('files', f))
     audios.forEach(f => fd.append('audios', f))
     if (model) fd.append('model', model)
-    return http.post(`/customer-service/chat/upload`, fd, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 60000 })
+    return http.post(`/customer-service/chat/upload`, fd, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 300000 }) // 5分钟超时
   },
   getUser(userId) {
     return http.get(`/users/${userId}`);

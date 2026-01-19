@@ -473,19 +473,97 @@
         <!-- 创建规则表单 -->
         <div v-if="showCreateRuleForm" class="card" style="margin-bottom: 16px; background: #f9fafb;">
           <h4>新增自动发放规则</h4>
-          <form class="row" @submit.prevent="createAutoIssueRule">
-            <input v-model="autoIssueRuleForm.rule_id" placeholder="规则ID（可选，自动生成）" />
-            <select v-model="autoIssueRuleForm.trigger" required>
+          <form class="row" @submit.prevent="createAutoIssueRule" style="flex-wrap: wrap; gap: 12px;">
+            <input v-model="autoIssueRuleForm.rule_id" placeholder="规则ID（可选，自动生成）" style="flex: 1; min-width: 150px;" />
+            <select v-model="autoIssueRuleForm.trigger" required style="flex: 1; min-width: 150px;">
               <option value="">选择触发器</option>
               <option value="register">新用户注册</option>
               <option value="first_order">首次购买</option>
               <option value="birthday">生日</option>
-              <option value="cron">定时任务（Cron）</option>
+              <option value="cron">定时任务</option>
               <option value="date">指定日期</option>
             </select>
-            <input v-model.number="autoIssueRuleForm.coupon_id" type="number" placeholder="优惠券ID" required />
-            <input v-model="autoIssueRuleForm.cron" placeholder="Cron表达式（如使用cron触发器）" />
-            <label>启用<input type="checkbox" v-model="autoIssueRuleForm.enabled" /></label>
+            <input v-model.number="autoIssueRuleForm.coupon_id" type="number" placeholder="优惠券ID" required style="flex: 1; min-width: 100px;" />
+            
+            <!-- 定时任务人性化选择器 -->
+            <div v-if="autoIssueRuleForm.trigger === 'cron'" style="width: 100%; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #e5e7eb;">
+              <span style="font-weight: 500; color: #374151;">执行时间：</span>
+              <select v-model="cronPreset" @change="applyCronPreset" style="min-width: 140px;">
+                <option value="">自定义</option>
+                <option value="daily_0">每天凌晨 0:00</option>
+                <option value="daily_1">每天凌晨 1:00</option>
+                <option value="daily_8">每天上午 8:00</option>
+                <option value="daily_9">每天上午 9:00</option>
+                <option value="daily_12">每天中午 12:00</option>
+                <option value="daily_18">每天下午 18:00</option>
+                <option value="weekly_mon_9">每周一上午 9:00</option>
+                <option value="weekly_fri_18">每周五下午 18:00</option>
+                <option value="monthly_1_9">每月1号上午 9:00</option>
+                <option value="monthly_15_9">每月15号上午 9:00</option>
+                <option value="hourly">每小时整点</option>
+                <option value="every_30min">每30分钟</option>
+              </select>
+              <template v-if="cronPreset === ''">
+                <span style="color: #6b7280;">或自定义：</span>
+                <select v-model="cronMinute" style="width: 70px;">
+                  <option v-for="m in 60" :key="m-1" :value="m-1">{{ (m-1).toString().padStart(2,'0') }}分</option>
+                </select>
+                <select v-model="cronHour" style="width: 70px;">
+                  <option v-for="h in 24" :key="h-1" :value="h-1">{{ (h-1).toString().padStart(2,'0') }}时</option>
+                </select>
+                <select v-model="cronDayOfMonth" style="width: 80px;">
+                  <option value="*">每天</option>
+                  <option v-for="d in 31" :key="d" :value="d">{{ d }}号</option>
+                </select>
+                <select v-model="cronMonth" style="width: 80px;">
+                  <option value="*">每月</option>
+                  <option v-for="m in 12" :key="m" :value="m">{{ m }}月</option>
+                </select>
+                <select v-model="cronDayOfWeek" style="width: 80px;">
+                  <option value="*">每周</option>
+                  <option value="1">周一</option>
+                  <option value="2">周二</option>
+                  <option value="3">周三</option>
+                  <option value="4">周四</option>
+                  <option value="5">周五</option>
+                  <option value="6">周六</option>
+                  <option value="0">周日</option>
+                </select>
+              </template>
+              <span style="color: #9ca3af; font-size: 12px;">生成：{{ autoIssueRuleForm.cron || '未设置' }}</span>
+            </div>
+            
+            <!-- 指定日期选择器 -->
+            <div v-if="autoIssueRuleForm.trigger === 'date'" style="width: 100%; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #e5e7eb;">
+              <span style="font-weight: 500; color: #374151;">📅 执行日期时间：</span>
+              <input type="datetime-local" v-model="scheduledDate" style="padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;" />
+              <span style="color: #9ca3af; font-size: 12px;">将在指定日期和时间执行一次</span>
+            </div>
+            
+            <!-- 生日触发器 - 指定发送时间 -->
+            <div v-if="autoIssueRuleForm.trigger === 'birthday'" style="width: 100%; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #e5e7eb;">
+              <span style="font-weight: 500; color: #374151;">🎂 发送时间：</span>
+              <select v-model="birthdayHour" style="padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                <option v-for="h in 24" :key="h-1" :value="h-1">{{ (h-1).toString().padStart(2,'0') }}:00</option>
+              </select>
+              <span style="color: #9ca3af; font-size: 12px;">用户生日当天的发送时间</span>
+            </div>
+            
+            <!-- 新用户注册 / 首次购买 - 延迟发送选项 -->
+            <div v-if="autoIssueRuleForm.trigger === 'register' || autoIssueRuleForm.trigger === 'first_order'" style="width: 100%; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #e5e7eb;">
+              <span style="font-weight: 500; color: #374151;">{{ autoIssueRuleForm.trigger === 'register' ? '👤' : '🛒' }} 发送时机：</span>
+              <select v-model="issueDelay" style="padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                <option value="0">立即发送</option>
+                <option value="60">1分钟后</option>
+                <option value="300">5分钟后</option>
+                <option value="1800">30分钟后</option>
+                <option value="3600">1小时后</option>
+                <option value="86400">24小时后</option>
+              </select>
+              <span style="color: #9ca3af; font-size: 12px;">{{ autoIssueRuleForm.trigger === 'register' ? '用户注册后' : '首次下单后' }}多久发送优惠券</span>
+            </div>
+            
+            <label style="display: flex; align-items: center; gap: 4px;">启用<input type="checkbox" v-model="autoIssueRuleForm.enabled" /></label>
             <button class="btn" type="submit">创建规则</button>
             <button class="btn outline" type="button" @click="showCreateRuleForm = false">取消</button>
           </form>
@@ -498,14 +576,23 @@
             <li v-for="(rule, ruleId) in autoIssueRules" :key="ruleId" style="padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;">
               <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px;">
                 <span><strong>规则ID：</strong>{{ ruleId }}</span>
-                <span><strong>触发器：</strong>{{ rule.trigger }}</span>
+                <span><strong>触发方式：</strong>{{ formatTriggerName(rule.trigger) }}</span>
                 <span><strong>优惠券ID：</strong>{{ rule.coupon_id }}</span>
                 <span :style="{ color: rule.enabled ? '#10b981' : '#6b7280' }">
                   {{ rule.enabled ? '已启用' : '已禁用' }}
                 </span>
               </div>
-              <div v-if="rule.cron" style="margin-bottom: 8px;">
-                <strong>Cron表达式：</strong>{{ rule.cron }}
+              <div v-if="rule.trigger === 'cron' && rule.cron" style="margin-bottom: 8px; padding: 8px; background: #f0fdf4; border-radius: 6px; color: #166534;">
+                <strong>⏰ 执行时间：</strong>{{ formatCronToHuman(rule.cron) }}
+              </div>
+              <div v-if="rule.trigger === 'date'" style="margin-bottom: 8px; padding: 8px; background: #fef3c7; border-radius: 6px; color: #92400e;">
+                <strong>📅 执行日期：</strong>{{ rule.scheduled_date ? formatDate(rule.scheduled_date) : '未设置具体日期' }}
+              </div>
+              <div v-if="rule.trigger === 'birthday'" style="margin-bottom: 8px; padding: 8px; background: #fce7f3; border-radius: 6px; color: #9d174d;">
+                <strong>🎂 发送时间：</strong>用户生日当天 {{ formatBirthdayHour(rule.birthday_hour) }}
+              </div>
+              <div v-if="rule.trigger === 'register' || rule.trigger === 'first_order'" style="margin-bottom: 8px; padding: 8px; background: #e0e7ff; border-radius: 6px; color: #3730a3;">
+                <strong>{{ rule.trigger === 'register' ? '👤' : '🛒' }} 发送时机：</strong>{{ formatDelaySeconds(rule.delay_seconds) }}
               </div>
               <div class="row">
                 <button class="btn outline" @click="toggleAutoIssueRule(ruleId, !rule.enabled)">{{ rule.enabled ? '禁用' : '启用' }}</button>
@@ -956,13 +1043,179 @@ const autoIssueRules = ref({})
 const autoIssueConfig = ref(null)
 const autoIssueConfigForm = reactive({ new_user_coupon_id: null, first_order_coupon_id: null })
 const showCreateRuleForm = ref(false)
-const autoIssueRuleForm = reactive({ rule_id: '', trigger: '', coupon_id: null, cron: '', enabled: true })
+const autoIssueRuleForm = reactive({ 
+  rule_id: '', 
+  trigger: '', 
+  coupon_id: null, 
+  cron: '', 
+  enabled: true,
+  scheduled_date: '',  // 指定日期
+  birthday_hour: 9,    // 生日发送时间（小时）
+  delay_seconds: 0     // 延迟发送（秒）
+})
 
+// Cron 表达式人性化选择器
+const cronPreset = ref('')
+const cronMinute = ref(0)
+const cronHour = ref(9)
+const cronDayOfMonth = ref('*')
+const cronMonth = ref('*')
+const cronDayOfWeek = ref('*')
+
+// 预设 Cron 表达式
+const cronPresets = {
+  'daily_0': '0 0 * * *',
+  'daily_1': '0 1 * * *',
+  'daily_8': '0 8 * * *',
+  'daily_9': '0 9 * * *',
+  'daily_12': '0 12 * * *',
+  'daily_18': '0 18 * * *',
+  'weekly_mon_9': '0 9 * * 1',
+  'weekly_fri_18': '0 18 * * 5',
+  'monthly_1_9': '0 9 1 * *',
+  'monthly_15_9': '0 9 15 * *',
+  'hourly': '0 * * * *',
+  'every_30min': '*/30 * * * *'
+}
+
+function applyCronPreset() {
+  if (cronPreset.value && cronPresets[cronPreset.value]) {
+    autoIssueRuleForm.cron = cronPresets[cronPreset.value]
+  }
+}
+
+function updateCronFromCustom() {
+  if (cronPreset.value === '') {
+    autoIssueRuleForm.cron = `${cronMinute.value} ${cronHour.value} ${cronDayOfMonth.value} ${cronMonth.value} ${cronDayOfWeek.value}`
+  }
+}
+
+// 监听自定义 Cron 字段变化
+watch([cronMinute, cronHour, cronDayOfMonth, cronMonth, cronDayOfWeek], updateCronFromCustom)
+
+// 指定日期选择器
+const scheduledDate = ref('')
+
+// 生日发送时间
+const birthdayHour = ref(9)
+
+// 注册/首购延迟发送
+const issueDelay = ref('0')
+
+// 监听日期、生日时间、延迟时间的变化，自动同步到表单
+watch(scheduledDate, (val) => {
+  autoIssueRuleForm.scheduled_date = val || ''
+})
+
+watch(birthdayHour, (val) => {
+  autoIssueRuleForm.birthday_hour = val
+})
+
+watch(issueDelay, (val) => {
+  autoIssueRuleForm.delay_seconds = parseInt(val) || 0
+})
+
+// 触发器名称中文映射
+function formatTriggerName(trigger) {
+  const names = {
+    'register': '新用户注册',
+    'first_order': '首次购买',
+    'birthday': '生日',
+    'cron': '定时任务',
+    'date': '指定日期'
+  }
+  return names[trigger] || trigger
+}
+
+// Cron 表达式转人性化中文描述
+function formatCronToHuman(cron) {
+  if (!cron) return '未设置'
+  
+  const parts = cron.split(' ')
+  if (parts.length < 5) return cron
+  
+  const [minute, hour, dayOfMonth, month, dayOfWeek] = parts
+  
+  // 预设匹配
+  const presets = {
+    '0 0 * * *': '每天凌晨 00:00',
+    '0 1 * * *': '每天凌晨 01:00',
+    '0 8 * * *': '每天上午 08:00',
+    '0 9 * * *': '每天上午 09:00',
+    '0 12 * * *': '每天中午 12:00',
+    '0 18 * * *': '每天下午 18:00',
+    '0 9 * * 1': '每周一上午 09:00',
+    '0 18 * * 5': '每周五下午 18:00',
+    '0 9 1 * *': '每月1号上午 09:00',
+    '0 9 15 * *': '每月15号上午 09:00',
+    '0 * * * *': '每小时整点',
+    '*/30 * * * *': '每30分钟',
+    '*/5 * * * *': '每5分钟',
+    '*/10 * * * *': '每10分钟',
+    '*/15 * * * *': '每15分钟'
+  }
+  
+  if (presets[cron]) return presets[cron]
+  
+  // 自定义解析
+  let result = ''
+  
+  // 星期
+  const weekNames = { '0': '周日', '1': '周一', '2': '周二', '3': '周三', '4': '周四', '5': '周五', '6': '周六', '7': '周日' }
+  if (dayOfWeek !== '*') {
+    result += `每${weekNames[dayOfWeek] || '周' + dayOfWeek} `
+  }
+  
+  // 月份
+  if (month !== '*') {
+    result += `${month}月 `
+  }
+  
+  // 日期
+  if (dayOfMonth !== '*') {
+    result += `${dayOfMonth}号 `
+  } else if (!result) {
+    result += '每天 '
+  }
+  
+  // 时间
+  const h = hour.padStart(2, '0')
+  const m = minute.padStart(2, '0')
+  
+  if (hour === '*' && minute.startsWith('*/')) {
+    result = `每${minute.slice(2)}分钟`
+  } else if (hour === '*') {
+    result += `每小时的第${m}分`
+  } else if (minute.startsWith('*/')) {
+    result += `${h}时起每${minute.slice(2)}分钟`
+  } else {
+    result += `${h}:${m}`
+  }
+  
+  return result.trim() || cron
+}
 
 function formatDate(d){
   if(!d) return '-'
-  try { return new Date(d).toLocaleString() } catch { return String(d) || '-' }
+  try { return new Date(d).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) } catch { return String(d) || '-' }
 }
+
+// 格式化生日发送时间
+function formatBirthdayHour(hour) {
+  if (hour === undefined || hour === null) return '09:00（默认）'
+  const h = String(hour).padStart(2, '0')
+  return `${h}:00`
+}
+
+// 格式化延迟发送时间
+function formatDelaySeconds(seconds) {
+  if (!seconds || seconds === 0) return '立即发送'
+  if (seconds < 60) return `${seconds}秒后`
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}分钟后`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}小时后`
+  return `${Math.floor(seconds / 86400)}天后`
+}
+
 function fmtLocal(d){
   try {
     if (!d) return ''

@@ -137,6 +137,24 @@ def create_app() -> FastAPI:
             print("✓ Redis 缓存服务已初始化")
     except Exception as e:
         print(f"⚠ Redis 缓存服务初始化失败: {e}")
+    
+    # 后台异步初始化 RAG 服务（避免阻塞启动和首次请求）
+    import threading
+    def init_rag_background():
+        try:
+            from .services.rag_service import get_rag_service
+            print("🔄 后台初始化 RAG 服务...")
+            rag_service = get_rag_service()
+            if rag_service and rag_service.embedding_model:
+                print("✓ RAG 服务后台初始化完成")
+            else:
+                print("⚠ RAG 服务初始化完成但嵌入模型未加载")
+        except Exception as e:
+            print(f"⚠ RAG 服务后台初始化失败: {e}")
+    
+    rag_thread = threading.Thread(target=init_rag_background, daemon=True)
+    rag_thread.start()
+    print("✓ RAG 服务后台初始化已启动")
 
     @app.get("/")
     def read_root():
