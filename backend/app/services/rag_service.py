@@ -106,7 +106,13 @@ class RAGService:
             # 使用列表中的第一个模型
             model_name = model_list[0]
         
+        # 如果模型已经加载，跳过重新加载
+        if self.embedding_model is not None:
+            print(f"ℹ️ 嵌入模型已存在，跳过重新加载: {model_name}")
+            return
+        
         try:
+            print(f"📥 开始加载嵌入模型: {model_name}...")
             self.embedding_model = SentenceTransformer(model_name)
             # 获取模型维度
             test_embedding = self.embedding_model.encode(["test"])
@@ -748,9 +754,20 @@ class RAGService:
 _rag_service: Optional[RAGService] = None
 
 
+def is_rag_ready() -> bool:
+    """检查 RAG 服务是否已准备好（模型已加载）"""
+    global _rag_service
+    if _rag_service is None:
+        return False
+    return _rag_service.embedding_model is not None
+
+
 def get_rag_service() -> RAGService:
     """获取 RAG 服务实例（单例模式）"""
     global _rag_service
     if _rag_service is None:
+        print("🔄 创建新的 RAG 服务实例（首次初始化）")
         _rag_service = RAGService()
+    else:
+        print("♻️ 使用现有的 RAG 服务实例（单例模式）")
     return _rag_service

@@ -327,7 +327,10 @@ def admin_create_auto_issue_rule(payload: dict, _: bool = Depends(verify_admin))
             "coupon_id": payload.get("coupon_id"),
             "condition": payload.get("condition"),
             "cron": payload.get("cron"),
-            "enabled": payload.get("enabled", True)
+            "enabled": payload.get("enabled", True),
+            "scheduled_date": payload.get("scheduled_date"),  # 指定日期触发器的日期时间
+            "birthday_hour": payload.get("birthday_hour", 9),  # 生日触发器的发送时间（小时）
+            "delay_seconds": payload.get("delay_seconds", 0)   # 注册/首购触发器的延迟秒数
         }
         auto_issue_service.register_rule(rule_id, rule)
         return {"status": "ok", "message": "规则已创建", "rule_id": rule_id}
@@ -355,6 +358,12 @@ def admin_update_auto_issue_rule(rule_id: str, payload: dict, _: bool = Depends(
             existing_rule["cron"] = payload["cron"]
         if "enabled" in payload:
             existing_rule["enabled"] = payload["enabled"]
+        if "scheduled_date" in payload:
+            existing_rule["scheduled_date"] = payload["scheduled_date"]
+        if "birthday_hour" in payload:
+            existing_rule["birthday_hour"] = payload["birthday_hour"]
+        if "delay_seconds" in payload:
+            existing_rule["delay_seconds"] = payload["delay_seconds"]
         
         return {"status": "ok", "message": "规则已更新"}
     except HTTPException:
