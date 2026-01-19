@@ -27,6 +27,12 @@ services:
       - REDIS_DB=0
       - REDIS_ENABLED=true
       - COUPON_AUTO_ISSUE_ENABLED=true
+      # 大模型 API 配置（可选，用于客服功能）
+      # 请将 YOUR_API_KEY 替换为您的阿里云 DashScope API 密钥
+      # 获取方式：https://dashscope.console.aliyun.com/
+      - MODEL_API_KEY=sk-8c20a97437cf4d088e3d33b0639e8934
+      # 或使用 DASHSCOPE_API_KEY
+      # - DASHSCOPE_API_KEY=sk-YOUR_API_KEY
     volumes:
       - ./backend/smart_mall.db:/app/smart_mall.db
       - ./backend/knowledge_base_index.faiss:/app/knowledge_base_index.faiss
@@ -35,17 +41,24 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/', timeout=2)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   web:
     build:
       context: ./frontend
     container_name: smart_mall_web
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
-      - "8000:8000"
+      - "80:80"
 
 volumes:
   redis_data:

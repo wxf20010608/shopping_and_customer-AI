@@ -23,7 +23,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+# 创建 pip 配置文件，使用镜像源
+RUN mkdir -p /root/.pip && \
+    echo "[global]" > /root/.pip/pip.conf && \
+    echo "index-url = https://mirrors.aliyun.com/pypi/simple/" >> /root/.pip/pip.conf && \
+    echo "trusted-host = mirrors.aliyun.com" >> /root/.pip/pip.conf && \
+    echo "timeout = 1000" >> /root/.pip/pip.conf && \
+    echo "retries = 5" >> /root/.pip/pip.conf && \
+    echo "no-cache-dir = true" >> /root/.pip/pip.conf
+# 安装依赖，如果哈希检查失败则尝试官方源
+RUN pip install --no-cache-dir --default-timeout=1000 --retries=5 -r /app/requirements.txt || \
+    (echo "镜像源安装失败（可能是哈希检查问题），尝试官方源..." && \
+     pip install --no-cache-dir --default-timeout=1000 --retries=5 -i https://pypi.org/simple/ -r /app/requirements.txt)
 
 COPY . /app
 

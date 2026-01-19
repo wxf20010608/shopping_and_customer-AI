@@ -113,6 +113,9 @@ def transcribe_audio(audio_data: bytes, filename: str | None = None, mime: str |
 def _call_qwen(prompt: str, history: List[dict], model_override: Optional[str] = None) -> str:
     load_env()
     key = os.environ.get("MODEL_API_KEY") or os.environ.get("DASHSCOPE_API_KEY")
+    # 去除可能的引号
+    if key:
+        key = key.strip().strip('"').strip("'")
     model = os.environ.get("MODEL_NAME", "qwen-turbo")
     vl_model = os.environ.get("MODEL_NAME_VL") or ("qwen-vl-plus" if "vl" not in (model or "") else model)
     text_model = os.environ.get("MODEL_NAME_TEXT") or model
@@ -266,6 +269,7 @@ def _call_qwen(prompt: str, history: List[dict], model_override: Optional[str] =
 
 
 def chat(user_id: int, product_id: Optional[int], text: str, db: Session, model_override: Optional[str] = None, extra_segments: Optional[List[dict]] = None) -> ChatMessage:
+    print(f"📞 收到聊天请求: user_id={user_id}, product_id={product_id}, text={text[:50] if text else ''}...")
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise ValueError("用户不存在")
@@ -397,11 +401,11 @@ def chat(user_id: int, product_id: Optional[int], text: str, db: Session, model_
         )
     else:
         # 如果没有使用知识库，使用常规提示词
-    system_prompt = (
-        "你是电商客服，使用简洁中文回复，支持售前/售后、物流查询、商品推荐。"
-        "优先结合系统提供的信息进行回答，无法确定时要礼貌引导。"
-        + product_info + logistics_info
-    )
+        system_prompt = (
+            "你是电商客服，使用简洁中文回复，支持售前/售后、物流查询、商品推荐。"
+            "优先结合系统提供的信息进行回答，无法确定时要礼貌引导。"
+            + product_info + logistics_info
+        )
 
     # persist user message
     umsg = None
@@ -437,8 +441,11 @@ def chat(user_id: int, product_id: Optional[int], text: str, db: Session, model_
             cleaned = []
         user_content = user_content + cleaned
     try:
-    reply = _call_qwen(system_prompt, history + [{"role": "user", "content": user_content}], model_override)
-    except HTTPException:
+        print(f"🤖 开始调用AI服务...")
+        reply = _call_qwen(system_prompt, history + [{"role": "user", "content": user_content}], model_override)
+        print(f"✅ AI服务返回回复: {reply[:100] if reply else 'None'}...")
+    except HTTPException as he:
+        print(f"❌ HTTPException: {he.status_code} - {he.detail}")
         raise
     except Exception as e:
         import traceback
