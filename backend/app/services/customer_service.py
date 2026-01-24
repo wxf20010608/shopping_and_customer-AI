@@ -349,42 +349,42 @@ def chat(user_id: int, product_id: Optional[int], text: str, db: Session, model_
             print("⏳ RAG 服务尚未准备好，跳过知识库检索")
         else:
             rag_service = get_rag_service()
+        
+        if rag_service and rag_service.embedding_model:
+            # RAG完整流程：
+            # 步骤1：向量化用户查询（使用与文档相同的嵌入模型）
+            # 步骤2：在向量数据库中检索最相关的文档块（使用余弦相似度计算）
+            # 步骤3：获取检索结果并构建上下文
+            # 降低相似度阈值以提高召回率（从0.3降到0.2）
+            similarity_threshold = float(os.environ.get("RAG_SIMILARITY_THRESHOLD", "0.2"))
+            # 增加top_k以提高召回率（从3增加到5）
+            top_k = int(os.environ.get("RAG_TOP_K", "5"))
+            context_text, result_details = rag_service.retrieve_context(
+                db, text, top_k=top_k, similarity_threshold=similarity_threshold
+            )
             
-            if rag_service and rag_service.embedding_model:
-                # RAG完整流程：
-                # 步骤1：向量化用户查询（使用与文档相同的嵌入模型）
-                # 步骤2：在向量数据库中检索最相关的文档块（使用余弦相似度计算）
-                # 步骤3：获取检索结果并构建上下文
-                # 降低相似度阈值以提高召回率（从0.3降到0.2）
-                similarity_threshold = float(os.environ.get("RAG_SIMILARITY_THRESHOLD", "0.2"))
-                # 增加top_k以提高召回率（从3增加到5）
-                top_k = int(os.environ.get("RAG_TOP_K", "5"))
-                context_text, result_details = rag_service.retrieve_context(
-                    db, text, top_k=top_k, similarity_threshold=similarity_threshold
-                )
+            if context_text and result_details:
+                # 计算最高相似度
+                rag_similarity = max([r["similarity"] for r in result_details], default=0.0)
                 
-                if context_text and result_details:
-                    # 计算最高相似度
-                    rag_similarity = max([r["similarity"] for r in result_details], default=0.0)
-                    
-                    # 如果相似度足够高，优先使用知识库内容
-                    if rag_similarity >= similarity_threshold:
-                        rag_used = True
-                        # 构建增强的提示词，指示AI使用检索到的内容（但不暴露来源）
-                        rag_context = (
-                            f"\n\n【参考信息】\n"
-                            f"{context_text}\n"
-                            f"【参考信息结束】\n\n"
-                            f"请优先使用以上参考信息回答用户问题。如果参考信息完全回答了用户问题，"
-                            f"请直接使用参考信息回答，无需调用其他信息。如果参考信息部分相关，"
-                            f"请结合参考信息和系统信息回答。如果参考信息不相关，再使用系统信息回答。"
-                            f"回答时不要提及信息来源，直接自然地回答问题即可。"
-                        )
-                        print(f"✓ RAG检索成功：找到 {len(result_details)} 条相关内容，最高相似度 {rag_similarity:.2f}")
-                    else:
-                        print(f"⚠ RAG检索结果相似度较低（{rag_similarity:.2f} < {similarity_threshold}），不使用知识库内容")
+                # 如果相似度足够高，优先使用知识库内容
+                if rag_similarity >= similarity_threshold:
+                    rag_used = True
+                    # 构建增强的提示词，指示AI使用检索到的内容（但不暴露来源）
+                    rag_context = (
+                        f"\n\n【参考信息】\n"
+                        f"{context_text}\n"
+                        f"【参考信息结束】\n\n"
+                        f"请优先使用以上参考信息回答用户问题。如果参考信息完全回答了用户问题，"
+                        f"请直接使用参考信息回答，无需调用其他信息。如果参考信息部分相关，"
+                        f"请结合参考信息和系统信息回答。如果参考信息不相关，再使用系统信息回答。"
+                        f"回答时不要提及信息来源，直接自然地回答问题即可。"
+                    )
+                    print(f"✓ RAG检索成功：找到 {len(result_details)} 条相关内容，最高相似度 {rag_similarity:.2f}")
                 else:
-                    print("ℹ RAG检索未找到相关内容，将使用大模型直接回答")
+                    print(f"⚠ RAG检索结果相似度较低（{rag_similarity:.2f} < {similarity_threshold}），不使用知识库内容")
+            else:
+                print("ℹ RAG检索未找到相关内容，将使用大模型直接回答")
     except Exception as e:
         # RAG 功能失败不影响主流程
         import traceback
