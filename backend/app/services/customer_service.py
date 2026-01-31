@@ -342,11 +342,23 @@ def chat(user_id: int, product_id: Optional[int], text: str, db: Session, model_
     rag_similarity = 0.0
     
     try:
+<<<<<<< HEAD
         from ..services.rag_service import get_rag_service
         
         rag_service = get_rag_service()
         # 有嵌入模型时用向量+BM25 混合检索，无嵌入模型或向量为空时仅用 BM25
         if rag_service:
+=======
+        from ..services.rag_service import get_rag_service, is_rag_ready
+        
+        # 检查 RAG 服务是否已准备好（模型已加载）
+        if not is_rag_ready():
+            print("⏳ RAG 服务尚未准备好，跳过知识库检索")
+        else:
+            rag_service = get_rag_service()
+        
+        if rag_service and rag_service.embedding_model:
+>>>>>>> small_shopping_version1.0.0
             # RAG完整流程：
             # 步骤1：向量化用户查询（使用与文档相同的嵌入模型）
             # 步骤2：在向量数据库中检索最相关的文档块（使用余弦相似度计算）

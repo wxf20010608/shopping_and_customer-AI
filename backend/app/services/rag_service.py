@@ -413,9 +413,12 @@ class RAGService:
         db.flush()
         
         # ========== 步骤3：向量化与索引构建 ==========
+<<<<<<< HEAD
         SYNTHETIC_OFFSET = 1000000  # 向量化失败时使用的合成 ID 前缀，避免与 FAISS 冲突
         chunks_created = False
         
+=======
+>>>>>>> small_shopping_version1.0.0
         if self.embedding_model and FAISS_AVAILABLE and self.vector_index is not None:
             # 3.1 批量向量化（使用嵌入模型将文本块转换为向量）
             embeddings = self.embed_texts(chunk_contents)
@@ -442,6 +445,7 @@ class RAGService:
                         vector_id=start_id + i  # 存储向量ID，用于检索时映射
                     )
                     db.add(chunk_record)
+<<<<<<< HEAD
                     chunks_created = True
                 
                 print(f"  → 已向量化并存储到FAISS索引（向量ID: {start_id}-{start_id + len(chunk_data) - 1}）")
@@ -465,6 +469,8 @@ class RAGService:
                     vector_id=synthetic_id  # 合成 ID，仅用于 BM25 检索
                 )
                 db.add(chunk_record)
+=======
+>>>>>>> small_shopping_version1.0.0
         
         # 3.4 提交数据库事务
         db.commit()
@@ -478,6 +484,10 @@ class RAGService:
             self._build_bm25_index(db)
         
         print(f"✓ 文档已添加: {title}, 块数: {len(chunk_data)}, 质量评分: {metadata['quality_score']:.2f}")
+<<<<<<< HEAD
+=======
+        print(f"  → 已向量化并存储到FAISS索引（向量ID: {start_id}-{start_id + len(chunk_data) - 1}）")
+>>>>>>> small_shopping_version1.0.0
         
         return doc
     
@@ -508,6 +518,7 @@ class RAGService:
         if query_embedding is None:
             return []
         
+<<<<<<< HEAD
         # 向量索引为空时直接返回，避免 FAISS 的 assert k > 0 报错
         if self.vector_index.ntotal == 0:
             return []
@@ -517,6 +528,8 @@ class RAGService:
             print(f"⚠ 向量维度不匹配：索引 {self.vector_index.d} vs 查询 {query_embedding.shape[0]}，跳过向量检索")
             return []
         
+=======
+>>>>>>> small_shopping_version1.0.0
         # 搜索向量索引（使用L2距离，后续转换为余弦相似度）
         query_embedding = query_embedding.reshape(1, -1)
         max_results = min(top_k * 3, self.vector_index.ntotal)  # 多检索一些，用于后续筛选（从2倍增加到3倍以提高召回率）
@@ -782,6 +795,7 @@ class RAGService:
             # 重建BM25索引
             if self.use_hybrid_search and BM25_AVAILABLE:
                 self._build_bm25_index(db)
+<<<<<<< HEAD
     
     def rebuild_chunks_for_documents_without_chunks(self, db: Session) -> int:
         """
@@ -828,6 +842,8 @@ class RAGService:
                 self._build_bm25_index(db)
             print(f"✓ 已为 {count} 个文档重建 chunks")
         return count
+=======
+>>>>>>> small_shopping_version1.0.0
 
 
 # 全局 RAG 服务实例

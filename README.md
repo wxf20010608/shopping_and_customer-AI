@@ -374,10 +374,13 @@ docker compose exec backend bash
 docker compose exec web sh
 ```
 
+<<<<<<< HEAD
 #### 启动命令：
 
 docker-compose up -d
 
+=======
+>>>>>>> small_shopping_version1.0.0
 #### 数据持久化
 
 以下文件/目录会自动映射到宿主机，数据不会丢失：
