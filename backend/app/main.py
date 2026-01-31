@@ -2,28 +2,42 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
+import sys
+import os
 
-from .database import Base, engine
-from .utils import load_env
-from .routers import (
+# 获取当前文件的绝对路径
+current_file = os.path.abspath(__file__)
+# 获取当前目录（/www/wwwroot/backend/app/）
+current_dir = os.path.dirname(current_file)
+# 获取项目根目录（/www/wwwroot/backend/）
+project_root = os.path.dirname(current_dir)
+
+# 添加项目根目录到Python路径
+sys.path.append(project_root)
+# from .database import Base, engine
+from app.utils import load_env
+from app.routers import (
     cart_route,
     logistics_route,
     orders_route,
     products_route,
     users_route,
 )
-from .routers import addresses_route, memberships_route, coupons_route, customer_service_route
-from .routers import knowledge_base_route, reviews_route
-from .admin_router import admin_router
+from app.routers import addresses_route, memberships_route, coupons_route, customer_service_route
+from app.routers import knowledge_base_route, reviews_route
+from app.admin_router import admin_router
+
+
+# 现在可以使用绝对导入
+from app.database import Base, engine
 
 
 def create_app() -> FastAPI:
     load_env()
-    import os
     
     # 配置日志记录到文件
     try:
-        from .services.logging_config import setup_logging
+        from app.services.logging_config import setup_logging
         log_dir = os.environ.get("LOG_DIR")
         log_level = os.environ.get("LOG_LEVEL", "INFO")
         setup_logging(log_dir=log_dir, log_level=log_level)
@@ -114,8 +128,8 @@ def create_app() -> FastAPI:
 
     # 初始化优惠券自动发放服务
     try:
-        from .services.coupon_auto_issue_service import get_auto_issue_service
-        from .database import get_db
+        from app.services.coupon_auto_issue_service import get_auto_issue_service
+        from app.database import get_db
         
         auto_issue_service = get_auto_issue_service()
         if auto_issue_service.enabled and auto_issue_service.scheduler:
@@ -131,7 +145,7 @@ def create_app() -> FastAPI:
     
     # 初始化 Redis 缓存服务
     try:
-        from .services.cache_service import get_cache_service
+        from app.services.cache_service import get_cache_service
         cache_service = get_cache_service()
         if cache_service.enabled:
             print("✓ Redis 缓存服务已初始化")
@@ -142,7 +156,7 @@ def create_app() -> FastAPI:
     import threading
     def init_rag_background():
         try:
-            from .services.rag_service import get_rag_service
+            from app.services.rag_service import get_rag_service
             print("🔄 后台初始化 RAG 服务...")
             rag_service = get_rag_service()
             if rag_service and rag_service.embedding_model:
@@ -164,7 +178,7 @@ def create_app() -> FastAPI:
     def shutdown_event():
         """应用关闭时清理资源"""
         try:
-            from .services.coupon_auto_issue_service import get_auto_issue_service
+            from app.services.coupon_auto_issue_service import get_auto_issue_service
             auto_issue_service = get_auto_issue_service()
             if auto_issue_service:
                 auto_issue_service.shutdown()
