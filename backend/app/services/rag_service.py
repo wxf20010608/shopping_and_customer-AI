@@ -415,7 +415,6 @@ class RAGService:
         # ========== 步骤3：向量化与索引构建 ==========
         SYNTHETIC_OFFSET = 1000000  # 向量化失败时使用的合成 ID 前缀，避免与 FAISS 冲突
         chunks_created = False
-        
         if self.embedding_model and FAISS_AVAILABLE and self.vector_index is not None:
             # 3.1 批量向量化（使用嵌入模型将文本块转换为向量）
             embeddings = self.embed_texts(chunk_contents)
@@ -442,8 +441,8 @@ class RAGService:
                         vector_id=start_id + i  # 存储向量ID，用于检索时映射
                     )
                     db.add(chunk_record)
-                    chunks_created = True
-                
+                chunks_created = True
+
                 print(f"  → 已向量化并存储到FAISS索引（向量ID: {start_id}-{start_id + len(chunk_data) - 1}）")
             else:
                 print(f"  → 向量化失败，将仅创建 chunks 供 BM25 检索")
@@ -478,7 +477,7 @@ class RAGService:
             self._build_bm25_index(db)
         
         print(f"✓ 文档已添加: {title}, 块数: {len(chunk_data)}, 质量评分: {metadata['quality_score']:.2f}")
-        print(f"  → 已向量化并存储到FAISS索引（向量ID: {start_id}-{start_id + len(chunk_data) - 1}）")
+
         return doc
     
     def search(self, query: str, top_k: Optional[int] = None, category: Optional[str] = None, 
@@ -507,7 +506,6 @@ class RAGService:
         query_embedding = self.embed_text(query.strip())
         if query_embedding is None:
             return []
-        
         # 向量索引为空时直接返回，避免 FAISS 的 assert k > 0 报错
         if self.vector_index.ntotal == 0:
             return []

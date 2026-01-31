@@ -356,7 +356,7 @@ class TextCleaner:
         if len(segments) >= 3:
             return [s for s in segments if s and len(s) >= self.min_chunk_length]
         return None
-
+    
     def chunk_text_optimized(self, text: str, chunk_size: Optional[int] = None, 
                             overlap: Optional[int] = None) -> List[Dict[str, any]]:
         """
@@ -364,16 +364,13 @@ class TextCleaner:
         - FAQ 文档：按问答对分块，提高检索精准度
         - 一般文档：按语义边界分块（段落、章节）
         - 重叠分块避免信息割裂
-
-        # - 按语义边界分块（段落、章节）
-        # - 重叠分块避免信息割裂
-        # - 控制分块大小（通常128-512 tokens，这里用字符数近似）
         """
         if not text:
             return []
-        
+
         chunk_size = chunk_size or self.chunk_size
         overlap = overlap or self.chunk_overlap
+
         # 优先尝试 FAQ 分块（常见问题类文档）
         faq_segments = self._try_faq_split(text)
         if faq_segments:
@@ -412,14 +409,15 @@ class TextCleaner:
             if final:
                 return final
             # 若 FAQ 分块过滤后为空，继续下面的通用分块
+
         # 首先进行结构化处理
         structured = self.extract_structure(text)
         text = structured["text"]
         structure_info = structured["structure"]
-        
+
         # 按语义边界分块（优先按段落、章节）
         chunks = []
-        
+
         # 如果有标题，按标题分块
         if structure_info.get("titles"):
             current_section = []

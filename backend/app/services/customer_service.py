@@ -343,13 +343,13 @@ def chat(user_id: int, product_id: Optional[int], text: str, db: Session, model_
     
     try:
         from ..services.rag_service import get_rag_service, is_rag_ready
-        
+
         # 检查 RAG 服务是否已准备好（模型已加载）
         if not is_rag_ready():
             print("⏳ RAG 服务尚未准备好，跳过知识库检索")
         else:
             rag_service = get_rag_service()
-        
+
         if rag_service and rag_service.embedding_model:
             # RAG完整流程：
             # 步骤1：向量化用户查询（使用与文档相同的嵌入模型）
