@@ -4,13 +4,22 @@ import os
 _backend = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _backend not in sys.path:
     sys.path.insert(0, _backend)
-
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
+
+# # 获取当前文件的绝对路径
+# current_file = os.path.abspath(__file__)
+# # 获取当前目录（/www/wwwroot/backend/app/）
+# current_dir = os.path.dirname(current_file)
+# # 获取项目根目录（/www/wwwroot/backend/）
+# project_root = os.path.dirname(current_dir)
+
+# # 添加项目根目录到Python路径
+# sys.path.append(project_root)
 from app.utils import load_env
 from app.routers import (
     cart_route,
@@ -20,12 +29,16 @@ from app.routers import (
     users_route,
 )
 from app.routers import addresses_route, memberships_route, coupons_route, customer_service_route
-# admin_router / knowledge_base_route / reviews_route 依赖 stock_alert_service，在 create_app 内按需导入
+from app.routers import knowledge_base_route, reviews_route
+from app.admin_router import admin_router
+
+
+# 现在可以使用绝对导入
+from app.database import Base, engine
 
 
 def create_app() -> FastAPI:
     load_env()
-    import os
     
     # 配置日志记录到文件
     try:
@@ -114,15 +127,10 @@ def create_app() -> FastAPI:
     app.include_router(memberships_route.router)
     app.include_router(coupons_route.router)
     app.include_router(customer_service_route.router)
-    # 管理员/知识库/评价路由依赖 admin_router（含 stock_alert_service），缺失时跳过
-    try:
-        from app.admin_router import admin_router
-        from app.routers import knowledge_base_route, reviews_route
-        app.include_router(knowledge_base_route.router)
-        app.include_router(reviews_route.router)
-        app.include_router(admin_router)
-    except ModuleNotFoundError as e:
-        print(f"⚠ 管理员/知识库/评价路由未加载（缺少依赖，如 stock_alert_service）: {e}")
+
+    app.include_router(knowledge_base_route.router)  # 知识库管理路由（管理员接口）
+    app.include_router(reviews_route.router)  # 商品评价路由
+    app.include_router(admin_router)
 
     # 初始化优惠券自动发放服务
     try:

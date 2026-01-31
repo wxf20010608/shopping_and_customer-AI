@@ -289,6 +289,7 @@ def admin_get_auto_issue_rules(_: bool = Depends(verify_admin)):
     """获取优惠券自动发放规则配置"""
     try:
         from app.services.coupon_auto_issue_service import get_auto_issue_service
+
         auto_issue_service = get_auto_issue_service()
         return {
             "enabled": auto_issue_service.enabled,
@@ -320,6 +321,7 @@ def admin_create_auto_issue_rule(payload: dict, _: bool = Depends(verify_admin))
     """创建优惠券自动发放规则"""
     try:
         from app.services.coupon_auto_issue_service import get_auto_issue_service
+
         auto_issue_service = get_auto_issue_service()
         rule_id = payload.get("rule_id") or f"rule_{len(auto_issue_service.rules) + 1}"
         rule = {

@@ -478,7 +478,7 @@ class RAGService:
             self._build_bm25_index(db)
         
         print(f"✓ 文档已添加: {title}, 块数: {len(chunk_data)}, 质量评分: {metadata['quality_score']:.2f}")
-        
+        print(f"  → 已向量化并存储到FAISS索引（向量ID: {start_id}-{start_id + len(chunk_data) - 1}）")
         return doc
     
     def search(self, query: str, top_k: Optional[int] = None, category: Optional[str] = None, 
@@ -516,7 +516,6 @@ class RAGService:
         if self.vector_index.d != query_embedding.shape[0]:
             print(f"⚠ 向量维度不匹配：索引 {self.vector_index.d} vs 查询 {query_embedding.shape[0]}，跳过向量检索")
             return []
-        
         # 搜索向量索引（使用L2距离，后续转换为余弦相似度）
         query_embedding = query_embedding.reshape(1, -1)
         max_results = min(top_k * 3, self.vector_index.ntotal)  # 多检索一些，用于后续筛选（从2倍增加到3倍以提高召回率）
