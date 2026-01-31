@@ -1,0 +1,22 @@
+# 大文件/压缩包
+.trae.zip
+*.zip
+
+# 环境与依赖
+.env
+.venv/
+venv/
+__pycache__/
+node_modules/
+
+# 数据库与索引（按需取消注释）
+# backend/smart_mall.db
+# backend/knowledge_base_index.faiss
+
+# 日志
+*.log
+backend/logs/
+
+# IDE
+.idea/
+.vscode/

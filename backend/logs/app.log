@@ -1,0 +1,11 @@
+2026-01-24 13:04:21 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: /app/logs
+2026-01-24 13:04:22 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-24 13:04:22 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-24 13:04:22 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-24 13:04:22 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-24 13:06:24 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-24 13:06:30 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: /app/logs
+2026-01-24 13:06:30 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-24 13:06:30 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-24 13:06:30 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-24 13:06:30 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large

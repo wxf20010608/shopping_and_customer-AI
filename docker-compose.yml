@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: smart_mall_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: smart_mall_backend
+    environment:
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=123456
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_ENABLED=true
+      - COUPON_AUTO_ISSUE_ENABLED=true
+      # 大模型 API 配置（可选，用于客服功能）
+      # 请将 YOUR_API_KEY 替换为您的阿里云 DashScope API 密钥
+      # 获取方式：https://dashscope.console.aliyun.com/
+      - MODEL_API_KEY=sk-8c20a97437cf4d088e3d33b0639e8934
+      # 或使用 DASHSCOPE_API_KEY
+      # - DASHSCOPE_API_KEY=sk-YOUR_API_KEY
+    volumes:
+      - ./backend/smart_mall.db:/app/smart_mall.db
+      - ./backend/knowledge_base_index.faiss:/app/knowledge_base_index.faiss
+      - ./backend/app/static/uploads:/app/app/static/uploads
+      - ./backend/logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/', timeout=2)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  web:
+    build:
+      context: ./frontend
+    container_name: smart_mall_web
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+
+volumes:
+  redis_data:
