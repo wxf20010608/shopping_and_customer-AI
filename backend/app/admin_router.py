@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import func
 import os, secrets
 
-<<<<<<< HEAD
 from app.database import get_db
 from app import schemas
 from app.models import Product, Order, OrderItem, CartItem, Cart, OrderStatusEnum, ShippingStatusEnum, ShippingInfo, User, Category, Coupon, UserCoupon, Membership, MembershipPlan, MembershipCard, ChatMessage, Review
@@ -13,15 +12,6 @@ from app.services.statistics_service import get_statistics_service
 from app.services.stock_alert_service import get_stock_alert_service
 from app.services.cache_service import get_cache_service
 from app.services import review_service
-=======
-from .database import get_db
-from . import schemas
-from .models import Product, Order, OrderItem, CartItem, Cart, OrderStatusEnum, ShippingStatusEnum, ShippingInfo, User, Category, Coupon, UserCoupon, Membership, MembershipPlan, MembershipCard, ChatMessage, Review
-from .services.statistics_service import get_statistics_service
-from .services.stock_alert_service import get_stock_alert_service
-from .services.cache_service import get_cache_service
-from .services import review_service
->>>>>>> small_shopping_version1.0.0
 
 security = HTTPBasic()
 
@@ -60,11 +50,7 @@ def admin_create_product(payload: schemas.ProductCreate, _: bool = Depends(verif
 
 @admin_router.put("/products/{product_id}", response_model=schemas.ProductRead)
 def admin_update_product(product_id: int, payload: schemas.ProductUpdate, _: bool = Depends(verify_admin), db: Session = Depends(get_db)):
-<<<<<<< HEAD
     from app.services import product_service
-=======
-    from .services import product_service
->>>>>>> small_shopping_version1.0.0
     p = db.query(Product).filter(Product.id == product_id).first()
     if not p: raise HTTPException(status_code=404, detail="商品不存在")
     data = payload.model_dump(exclude_unset=True)
@@ -119,11 +105,7 @@ def admin_update_logistics(order_id: int, status_value: ShippingStatusEnum, trac
 
 @admin_router.post("/users", response_model=schemas.UserRead, status_code=status.HTTP_201_CREATED)
 def admin_create_user(payload: schemas.UserCreate, _: bool = Depends(verify_admin), db: Session = Depends(get_db)):
-<<<<<<< HEAD
     from app.utils import hash_password
-=======
-    from .utils import hash_password
->>>>>>> small_shopping_version1.0.0
     user_data = payload.model_dump()
     user_data["password_hash"] = hash_password(user_data.pop("password"))
     user = User(**user_data)
@@ -136,11 +118,7 @@ def admin_update_user(user_id: int, payload: schemas.UserUpdate, _: bool = Depen
     if not user: raise HTTPException(status_code=404, detail="用户不存在")
     data = payload.model_dump(exclude_unset=True)
     if "password" in data:
-<<<<<<< HEAD
         from app.utils import hash_password
-=======
-        from .utils import hash_password
->>>>>>> small_shopping_version1.0.0
         data["password_hash"] = hash_password(data.pop("password"))
     for k,v in data.items(): setattr(user,k,v)
     db.commit(); db.refresh(user)
@@ -310,11 +288,7 @@ def admin_assign_coupon_bulk(coupon_id: int, payload: dict, _: bool = Depends(ve
 def admin_get_auto_issue_rules(_: bool = Depends(verify_admin)):
     """获取优惠券自动发放规则配置"""
     try:
-<<<<<<< HEAD
         from app.services.coupon_auto_issue_service import get_auto_issue_service
-=======
-        from .services.coupon_auto_issue_service import get_auto_issue_service
->>>>>>> small_shopping_version1.0.0
         auto_issue_service = get_auto_issue_service()
         return {
             "enabled": auto_issue_service.enabled,
@@ -345,11 +319,7 @@ def admin_set_auto_issue_config(payload: dict, _: bool = Depends(verify_admin)):
 def admin_create_auto_issue_rule(payload: dict, _: bool = Depends(verify_admin)):
     """创建优惠券自动发放规则"""
     try:
-<<<<<<< HEAD
         from app.services.coupon_auto_issue_service import get_auto_issue_service
-=======
-        from .services.coupon_auto_issue_service import get_auto_issue_service
->>>>>>> small_shopping_version1.0.0
         auto_issue_service = get_auto_issue_service()
         rule_id = payload.get("rule_id") or f"rule_{len(auto_issue_service.rules) + 1}"
         rule = {
@@ -371,11 +341,7 @@ def admin_create_auto_issue_rule(payload: dict, _: bool = Depends(verify_admin))
 def admin_update_auto_issue_rule(rule_id: str, payload: dict, _: bool = Depends(verify_admin)):
     """更新优惠券自动发放规则"""
     try:
-<<<<<<< HEAD
         from app.services.coupon_auto_issue_service import get_auto_issue_service
-=======
-        from .services.coupon_auto_issue_service import get_auto_issue_service
->>>>>>> small_shopping_version1.0.0
         auto_issue_service = get_auto_issue_service()
         if rule_id not in auto_issue_service.rules:
             raise HTTPException(status_code=404, detail="规则不存在")
@@ -409,11 +375,7 @@ def admin_update_auto_issue_rule(rule_id: str, payload: dict, _: bool = Depends(
 def admin_delete_auto_issue_rule(rule_id: str, _: bool = Depends(verify_admin)):
     """删除优惠券自动发放规则"""
     try:
-<<<<<<< HEAD
         from app.services.coupon_auto_issue_service import get_auto_issue_service
-=======
-        from .services.coupon_auto_issue_service import get_auto_issue_service
->>>>>>> small_shopping_version1.0.0
         auto_issue_service = get_auto_issue_service()
         if rule_id not in auto_issue_service.rules:
             raise HTTPException(status_code=404, detail="规则不存在")
@@ -494,11 +456,7 @@ def admin_delete_cache_pattern(pattern: str, _: bool = Depends(verify_admin)):
 def admin_list_log_files(_: bool = Depends(verify_admin)):
     """获取日志文件列表"""
     try:
-<<<<<<< HEAD
         from app.services.log_service import get_log_service
-=======
-        from .services.log_service import get_log_service
->>>>>>> small_shopping_version1.0.0
         log_service = get_log_service()
         return log_service.list_log_files()
     except Exception as e:
@@ -508,11 +466,7 @@ def admin_list_log_files(_: bool = Depends(verify_admin)):
 def admin_get_log_stats(_: bool = Depends(verify_admin)):
     """获取日志统计信息"""
     try:
-<<<<<<< HEAD
         from app.services.log_service import get_log_service
-=======
-        from .services.log_service import get_log_service
->>>>>>> small_shopping_version1.0.0
         log_service = get_log_service()
         return log_service.get_log_stats()
     except Exception as e:
@@ -529,11 +483,7 @@ def admin_read_log_file(
 ):
     """读取日志文件内容"""
     try:
-<<<<<<< HEAD
         from app.services.log_service import get_log_service
-=======
-        from .services.log_service import get_log_service
->>>>>>> small_shopping_version1.0.0
         log_service = get_log_service()
         return log_service.read_log_file(
             filename=filename,
@@ -551,11 +501,7 @@ def admin_read_log_file(
 def admin_clear_log_file(filename: str, _: bool = Depends(verify_admin)):
     """清空日志文件"""
     try:
-<<<<<<< HEAD
         from app.services.log_service import get_log_service
-=======
-        from .services.log_service import get_log_service
->>>>>>> small_shopping_version1.0.0
         log_service = get_log_service()
         return log_service.clear_log_file(filename)
     except ValueError as e:

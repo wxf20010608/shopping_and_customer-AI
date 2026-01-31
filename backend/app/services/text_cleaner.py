@@ -73,13 +73,8 @@ class TextCleaner:
             text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
         
         # 去除特殊字符和乱码（保留中文、英文、数字、基本标点、换行）
-<<<<<<< HEAD
         # 保留的字符：中文、英文、数字、基本标点、连字符（用于 3-5、7-10 等范围）、换行、制表符
         text = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9\s.,!?;:()（）【】《》「」『』、。，！？；：\n\t\-]', '', text)
-=======
-        # 保留的字符：中文、英文、数字、基本标点、换行、制表符
-        text = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9\s.,!?;:()（）【】《》「」『』、。，！？；：\n\t]', '', text)
->>>>>>> small_shopping_version1.0.0
         
         # 去除首尾空白
         text = text.strip()
@@ -315,8 +310,6 @@ class TextCleaner:
             score += 0.2
         
         return min(score, 1.0)
-    
-<<<<<<< HEAD
     def _try_faq_split(self, text: str) -> Optional[List[str]]:
         """
         尝试按 FAQ 格式分块（问/答、Q/A、编号问题等）
@@ -364,29 +357,20 @@ class TextCleaner:
             return [s for s in segments if s and len(s) >= self.min_chunk_length]
         return None
     
-=======
->>>>>>> small_shopping_version1.0.0
     def chunk_text_optimized(self, text: str, chunk_size: Optional[int] = None, 
                             overlap: Optional[int] = None) -> List[Dict[str, any]]:
         """
         (4) 分块优化
-<<<<<<< HEAD
         - FAQ 文档：按问答对分块，提高检索精准度
         - 一般文档：按语义边界分块（段落、章节）
         - 重叠分块避免信息割裂
-=======
-        - 按语义边界分块（段落、章节）
-        - 重叠分块避免信息割裂
-        - 控制分块大小（通常128-512 tokens，这里用字符数近似）
->>>>>>> small_shopping_version1.0.0
         """
         if not text:
             return []
-        
+
         chunk_size = chunk_size or self.chunk_size
         overlap = overlap or self.chunk_overlap
-        
-<<<<<<< HEAD
+
         # 优先尝试 FAQ 分块（常见问题类文档）
         faq_segments = self._try_faq_split(text)
         if faq_segments:
@@ -425,17 +409,15 @@ class TextCleaner:
             if final:
                 return final
             # 若 FAQ 分块过滤后为空，继续下面的通用分块
-        
-=======
->>>>>>> small_shopping_version1.0.0
+
         # 首先进行结构化处理
         structured = self.extract_structure(text)
         text = structured["text"]
         structure_info = structured["structure"]
-        
+
         # 按语义边界分块（优先按段落、章节）
         chunks = []
-        
+
         # 如果有标题，按标题分块
         if structure_info.get("titles"):
             current_section = []

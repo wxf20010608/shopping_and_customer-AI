@@ -9,7 +9,6 @@
 2026-01-24 13:06:30 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
 2026-01-24 13:06:30 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
 2026-01-24 13:06:30 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
-<<<<<<< HEAD
 2026-01-31 18:32:26 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
 2026-01-31 18:32:27 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
 2026-01-31 18:32:27 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
@@ -387,5 +386,3 @@ ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
 2026-01-31 21:11:04 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
 2026-01-31 21:11:04 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
 2026-01-31 21:12:58 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
-=======
->>>>>>> small_shopping_version1.0.0
