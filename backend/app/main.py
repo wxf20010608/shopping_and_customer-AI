@@ -1,20 +1,26 @@
+import sys
+import os
+# 兼容宝塔等直接运行 app/main.py：把 backend 加入 path，避免 "No module named 'app'"
+_backend = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _backend not in sys.path:
+    sys.path.insert(0, _backend)
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import Base, engine
-from .utils import load_env
-from .routers import (
+from app.database import Base, engine
+from app.utils import load_env
+from app.routers import (
     cart_route,
     logistics_route,
     orders_route,
     products_route,
     users_route,
 )
-from .routers import addresses_route, memberships_route, coupons_route, customer_service_route
-from .routers import knowledge_base_route, reviews_route
-from .admin_router import admin_router
+from app.routers import addresses_route, memberships_route, coupons_route, customer_service_route
+# admin_router / knowledge_base_route / reviews_route 依赖 stock_alert_service，在 create_app 内按需导入
 
 
 def create_app() -> FastAPI:
@@ -23,7 +29,7 @@ def create_app() -> FastAPI:
     
     # 配置日志记录到文件
     try:
-        from .services.logging_config import setup_logging
+        from app.services.logging_config import setup_logging
         log_dir = os.environ.get("LOG_DIR")
         log_level = os.environ.get("LOG_LEVEL", "INFO")
         setup_logging(log_dir=log_dir, log_level=log_level)
@@ -108,20 +114,26 @@ def create_app() -> FastAPI:
     app.include_router(memberships_route.router)
     app.include_router(coupons_route.router)
     app.include_router(customer_service_route.router)
-    app.include_router(knowledge_base_route.router)  # 知识库管理路由（管理员接口）
-    app.include_router(reviews_route.router)  # 商品评价路由
-    app.include_router(admin_router)
+    # 管理员/知识库/评价路由依赖 admin_router（含 stock_alert_service），缺失时跳过
+    try:
+        from app.admin_router import admin_router
+        from app.routers import knowledge_base_route, reviews_route
+        app.include_router(knowledge_base_route.router)
+        app.include_router(reviews_route.router)
+        app.include_router(admin_router)
+    except ModuleNotFoundError as e:
+        print(f"⚠ 管理员/知识库/评价路由未加载（缺少依赖，如 stock_alert_service）: {e}")
 
     # 初始化优惠券自动发放服务
     try:
-        from .services.coupon_auto_issue_service import get_auto_issue_service
-        from .database import get_db
+        from app.services.coupon_auto_issue_service import get_auto_issue_service
+        from app.database import get_db
         
         auto_issue_service = get_auto_issue_service()
         if auto_issue_service.enabled and auto_issue_service.scheduler:
             # 设置定时任务（每日检查）
             def get_db_session():
-                from .database import SessionLocal
+                from app.database import SessionLocal
                 return SessionLocal()
             
             auto_issue_service.schedule_daily_check(get_db_session)
@@ -131,7 +143,7 @@ def create_app() -> FastAPI:
     
     # 初始化 Redis 缓存服务
     try:
-        from .services.cache_service import get_cache_service
+        from app.services.cache_service import get_cache_service
         cache_service = get_cache_service()
         if cache_service.enabled:
             print("✓ Redis 缓存服务已初始化")
@@ -142,7 +154,7 @@ def create_app() -> FastAPI:
     import threading
     def init_rag_background():
         try:
-            from .services.rag_service import get_rag_service
+            from app.services.rag_service import get_rag_service
             print("🔄 后台初始化 RAG 服务...")
             rag_service = get_rag_service()
             if rag_service and rag_service.embedding_model:
@@ -164,7 +176,7 @@ def create_app() -> FastAPI:
     def shutdown_event():
         """应用关闭时清理资源"""
         try:
-            from .services.coupon_auto_issue_service import get_auto_issue_service
+            from app.services.coupon_auto_issue_service import get_auto_issue_service
             auto_issue_service = get_auto_issue_service()
             if auto_issue_service:
                 auto_issue_service.shutdown()

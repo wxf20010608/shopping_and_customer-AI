@@ -9,3 +9,380 @@
 2026-01-24 13:06:30 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
 2026-01-24 13:06:30 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
 2026-01-24 13:06:30 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 18:32:26 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 18:32:27 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 18:32:27 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 18:32:31 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 18:32:31 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 18:32:35 - passlib.handlers.bcrypt - WARNING - bcrypt.py:622 - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "D:\envs\AI_env\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-01-31 18:33:43 - jieba - DEBUG - __init__.py:113 - Building prefix dict from the default dictionary ...
+2026-01-31 18:33:43 - jieba - DEBUG - __init__.py:146 - Dumping model to file cache C:\Users\王显富\AppData\Local\Temp\jieba.cache
+2026-01-31 18:33:44 - jieba - DEBUG - __init__.py:164 - Loading model cost 0.511 seconds.
+2026-01-31 18:33:44 - jieba - DEBUG - __init__.py:166 - Prefix dict has been built successfully.
+2026-01-31 18:48:48 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 18:49:13 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 18:49:13 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 18:49:13 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 18:49:17 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 18:49:17 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 18:49:17 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 18:49:31 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 18:49:31 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 18:49:31 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 18:49:35 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 18:49:35 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 18:50:31 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 18:50:43 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 18:50:43 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 18:50:43 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 18:50:47 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 18:50:47 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 18:52:08 - jieba - DEBUG - __init__.py:113 - Building prefix dict from the default dictionary ...
+2026-01-31 18:52:08 - jieba - DEBUG - __init__.py:132 - Loading model from cache C:\Users\王显富\AppData\Local\Temp\jieba.cache
+2026-01-31 18:52:08 - jieba - DEBUG - __init__.py:164 - Loading model cost 0.498 seconds.
+2026-01-31 18:52:08 - jieba - DEBUG - __init__.py:166 - Prefix dict has been built successfully.
+2026-01-31 10:53:59 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: /app/logs
+2026-01-31 10:53:59 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 10:53:59 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 10:53:59 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 10:53:59 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 10:54:57 - jieba - DEBUG - __init__.py:113 - Building prefix dict from the default dictionary ...
+2026-01-31 10:54:58 - jieba - DEBUG - __init__.py:146 - Dumping model to file cache /tmp/jieba.cache
+2026-01-31 10:54:58 - jieba - DEBUG - __init__.py:164 - Loading model cost 0.383 seconds.
+2026-01-31 10:54:58 - jieba - DEBUG - __init__.py:166 - Prefix dict has been built successfully.
+2026-01-31 18:57:43 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 18:58:03 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 18:58:04 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 18:58:04 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 18:58:04 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 18:58:15 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 18:58:15 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 18:58:15 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 18:58:15 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 18:58:15 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:01:16 - jieba - DEBUG - __init__.py:113 - Building prefix dict from the default dictionary ...
+2026-01-31 19:01:16 - jieba - DEBUG - __init__.py:132 - Loading model from cache C:\Users\王显富\AppData\Local\Temp\jieba.cache
+2026-01-31 19:01:17 - jieba - DEBUG - __init__.py:164 - Loading model cost 0.505 seconds.
+2026-01-31 19:01:17 - jieba - DEBUG - __init__.py:166 - Prefix dict has been built successfully.
+2026-01-31 19:05:35 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:05:53 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:05:53 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:05:53 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:05:53 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:05:53 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:07:00 - jieba - DEBUG - __init__.py:113 - Building prefix dict from the default dictionary ...
+2026-01-31 19:07:00 - jieba - DEBUG - __init__.py:132 - Loading model from cache C:\Users\王显富\AppData\Local\Temp\jieba.cache
+2026-01-31 19:07:01 - jieba - DEBUG - __init__.py:164 - Loading model cost 0.623 seconds.
+2026-01-31 19:07:01 - jieba - DEBUG - __init__.py:166 - Prefix dict has been built successfully.
+2026-01-31 19:07:25 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:07:46 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:07:46 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:07:46 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:07:46 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:07:46 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:07:46 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:07:46 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:07:59 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:07:59 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: text-embedding-3-large
+2026-01-31 19:07:59 - sentence_transformers.SentenceTransformer - WARNING - SentenceTransformer.py:2046 - No sentence-transformers model found with name sentence-transformers/text-embedding-3-large. Creating a new one with mean pooling.
+2026-01-31 19:08:00 - jieba - DEBUG - __init__.py:113 - Building prefix dict from the default dictionary ...
+2026-01-31 19:08:00 - jieba - DEBUG - __init__.py:132 - Loading model from cache C:\Users\王显富\AppData\Local\Temp\jieba.cache
+2026-01-31 19:08:01 - jieba - DEBUG - __init__.py:164 - Loading model cost 0.731 seconds.
+2026-01-31 19:08:01 - jieba - DEBUG - __init__.py:166 - Prefix dict has been built successfully.
+2026-01-31 19:09:57 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:10:12 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:10:12 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:10:12 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:10:12 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:10:24 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:10:24 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:10:24 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:10:24 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:10:24 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:12:38 - jieba - DEBUG - __init__.py:113 - Building prefix dict from the default dictionary ...
+2026-01-31 19:12:38 - jieba - DEBUG - __init__.py:132 - Loading model from cache C:\Users\王显富\AppData\Local\Temp\jieba.cache
+2026-01-31 19:12:39 - jieba - DEBUG - __init__.py:164 - Loading model cost 0.568 seconds.
+2026-01-31 19:12:39 - jieba - DEBUG - __init__.py:166 - Prefix dict has been built successfully.
+2026-01-31 19:20:07 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:20:24 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:20:25 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:20:25 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:20:25 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:20:25 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:20:49 - jieba - DEBUG - __init__.py:113 - Building prefix dict from the default dictionary ...
+2026-01-31 19:20:49 - jieba - DEBUG - __init__.py:132 - Loading model from cache C:\Users\王显富\AppData\Local\Temp\jieba.cache
+2026-01-31 19:20:50 - jieba - DEBUG - __init__.py:164 - Loading model cost 0.499 seconds.
+2026-01-31 19:20:50 - jieba - DEBUG - __init__.py:166 - Prefix dict has been built successfully.
+2026-01-31 19:30:30 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:30:53 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:30:53 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:30:53 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:30:54 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:30:54 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:40:07 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:40:28 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:40:28 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:40:28 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:40:28 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:40:28 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:41:17 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:41:34 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:41:34 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:41:34 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:41:34 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:41:34 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:43:46 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:44:06 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:44:06 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:44:06 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:44:06 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:44:06 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:49:00 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:49:20 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:49:20 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:49:20 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:49:20 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:49:34 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:49:34 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:49:34 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:49:34 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:49:34 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:51:22 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:51:36 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:51:36 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:51:36 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:51:36 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:51:36 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:52:49 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:53:03 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:53:04 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:53:04 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:53:04 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:53:04 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:54:20 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:54:32 - root - INFO - logging_config.py:92 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:54:32 - root - INFO - logging_config.py:93 - 日志轮转时间: 每天 02:00
+2026-01-31 19:54:33 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:54:33 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:54:33 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:54:46 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:54:46 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:54:46 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:54:46 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:54:58 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:54:59 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:54:59 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:54:59 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:55:11 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:55:12 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:55:12 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:55:12 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:55:24 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:55:24 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:55:24 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:55:25 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:55:25 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:55:35 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:55:40 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:55:43 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:55:43 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 19:55:43 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 19:55:43 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 19:55:43 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 19:55:51 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:55:51 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:55:51 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:55:51 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:56:05 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:56:16 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:56:17 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:56:17 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:56:17 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:56:17 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 19:57:48 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 19:58:03 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 19:58:03 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 19:58:03 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 19:58:03 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 19:58:03 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 20:00:22 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:00:35 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:00:36 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:00:36 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:00:36 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 20:00:36 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 20:03:42 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:03:47 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:03:47 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 20:03:47 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 20:03:47 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 20:03:47 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 20:03:55 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:03:55 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:03:55 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:03:59 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:03:59 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 20:03:59 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 20:03:59 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 20:03:59 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 20:04:07 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:04:07 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:04:07 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 20:04:07 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 20:16:12 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:16:17 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:16:18 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 20:16:18 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 20:16:18 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 20:16:18 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 20:16:28 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:16:28 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:16:28 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 20:16:28 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 20:51:42 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:51:53 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:51:53 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 20:51:53 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 20:51:53 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 20:51:53 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 20:52:05 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:52:05 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:52:05 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:52:05 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 20:52:05 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 20:52:08 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:52:08 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 20:52:08 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 20:52:08 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 20:52:08 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 20:52:18 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:52:18 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:52:18 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:52:22 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:52:22 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 20:52:22 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 20:52:22 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 20:52:22 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 20:52:31 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:52:31 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:52:31 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 20:52:31 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 20:55:20 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:55:25 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:55:25 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 20:55:25 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 20:55:25 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 20:55:25 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 20:55:35 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:55:35 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:55:35 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 20:55:35 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 20:57:49 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:57:55 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:57:55 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 20:57:55 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 20:57:55 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 20:57:55 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 20:58:04 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:58:04 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:58:04 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 20:58:04 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 20:58:08 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:58:12 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:58:12 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 20:58:12 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 20:58:12 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 20:58:12 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 20:58:20 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:58:20 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:58:20 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 20:58:23 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 20:58:23 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 20:58:23 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 20:58:23 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 20:58:23 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 20:58:31 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 20:58:31 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 20:58:31 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 20:58:31 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 21:05:22 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 21:05:27 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 21:05:27 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 21:05:27 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 21:05:27 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 21:05:27 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 21:05:36 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 21:05:36 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 21:05:36 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 21:05:36 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 21:09:34 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 21:09:41 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 21:09:41 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 21:09:41 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 21:09:41 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 21:09:41 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 21:09:51 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 21:09:51 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 21:09:51 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 21:09:51 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 21:10:01 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 21:10:05 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 21:10:05 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 21:10:05 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 21:10:05 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 21:10:05 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 21:10:14 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 21:10:14 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 21:10:14 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 21:10:14 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 21:10:14 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 21:10:18 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 21:10:18 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 21:10:18 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 21:10:18 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 21:10:18 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 21:10:26 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 21:10:26 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 21:10:26 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 21:10:26 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 21:10:38 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 21:10:42 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 21:10:42 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 21:10:42 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 21:10:42 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 21:10:42 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 21:10:51 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 21:10:51 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 21:10:51 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down
+2026-01-31 21:10:55 - root - INFO - logging_config.py:81 - 日志系统已初始化，日志目录: D:\AI_Learning\02_Project\Shopping_app\backend\logs
+2026-01-31 21:10:55 - faiss.loader - INFO - loader.py:120 - Loading faiss with AVX512 support.
+2026-01-31 21:10:55 - faiss.loader - INFO - loader.py:125 - Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-01-31 21:10:55 - faiss.loader - INFO - loader.py:132 - Loading faiss with AVX2 support.
+2026-01-31 21:10:56 - faiss.loader - INFO - loader.py:134 - Successfully loaded faiss with AVX2 support.
+2026-01-31 21:11:04 - apscheduler.scheduler - INFO - base.py:214 - Scheduler started
+2026-01-31 21:11:04 - apscheduler.scheduler - INFO - base.py:1090 - Added job "CouponAutoIssueService.schedule_daily_check.<locals>.daily_task" to job store "default"
+2026-01-31 21:11:04 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:219 - Use pytorch device_name: cpu
+2026-01-31 21:11:04 - sentence_transformers.SentenceTransformer - INFO - SentenceTransformer.py:227 - Load pretrained SentenceTransformer: intfloat/multilingual-e5-large
+2026-01-31 21:12:58 - apscheduler.scheduler - INFO - base.py:245 - Scheduler has been shut down

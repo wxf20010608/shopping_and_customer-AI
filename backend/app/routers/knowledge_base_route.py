@@ -270,14 +270,19 @@ def rebuild_index(
     _: bool = Depends(verify_admin),
     db: Session = Depends(get_db)
 ):
-    """重建向量索引和BM25索引"""
+    """重建向量索引和BM25索引（含为无chunks的文档补建chunks）"""
     try:
         rag_service = get_rag_service()
+        # 先为没有 chunks 的文档补建 chunks（供 BM25 检索）
+        rebuilt_count = rag_service.rebuild_chunks_for_documents_without_chunks(db)
         rag_service._rebuild_index(db)
         # 重建BM25索引（如果启用混合检索）
         if rag_service.use_hybrid_search:
             rag_service._build_bm25_index(db)
-        return {"status": "ok", "message": "向量索引和BM25索引已重建"}
+        msg = "向量索引和BM25索引已重建"
+        if rebuilt_count > 0:
+            msg += f"，已为 {rebuilt_count} 个文档补建 chunks"
+        return {"status": "ok", "message": msg}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"重建索引失败: {str(e)}")
 

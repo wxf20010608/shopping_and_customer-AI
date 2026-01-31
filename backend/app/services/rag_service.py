@@ -413,6 +413,9 @@ class RAGService:
         db.flush()
         
         # ========== 步骤3：向量化与索引构建 ==========
+        SYNTHETIC_OFFSET = 1000000  # 向量化失败时使用的合成 ID 前缀，避免与 FAISS 冲突
+        chunks_created = False
+        
         if self.embedding_model and FAISS_AVAILABLE and self.vector_index is not None:
             # 3.1 批量向量化（使用嵌入模型将文本块转换为向量）
             embeddings = self.embed_texts(chunk_contents)
@@ -439,6 +442,29 @@ class RAGService:
                         vector_id=start_id + i  # 存储向量ID，用于检索时映射
                     )
                     db.add(chunk_record)
+                    chunks_created = True
+                
+                print(f"  → 已向量化并存储到FAISS索引（向量ID: {start_id}-{start_id + len(chunk_data) - 1}）")
+            else:
+                print(f"  → 向量化失败，将仅创建 chunks 供 BM25 检索")
+        
+        # 向量化失败或无嵌入模型时：仍创建 chunks，使用合成 vector_id 供 BM25 检索
+        if not chunks_created:
+            for i, chunk_info in enumerate(chunk_data):
+                chunk_metadata = {
+                    "title": chunk_info.get("title"),
+                    "type": chunk_info.get("type", "paragraph"),
+                    "chunk_index": chunk_info.get("chunk_index", i)
+                }
+                synthetic_id = SYNTHETIC_OFFSET + doc.id * 10000 + i
+                chunk_record = KnowledgeChunk(
+                    document_id=doc.id,
+                    chunk_index=i,
+                    content=chunk_info["content"],
+                    chunk_metadata=json.dumps(chunk_metadata, ensure_ascii=False),
+                    vector_id=synthetic_id  # 合成 ID，仅用于 BM25 检索
+                )
+                db.add(chunk_record)
         
         # 3.4 提交数据库事务
         db.commit()
@@ -452,7 +478,6 @@ class RAGService:
             self._build_bm25_index(db)
         
         print(f"✓ 文档已添加: {title}, 块数: {len(chunk_data)}, 质量评分: {metadata['quality_score']:.2f}")
-        print(f"  → 已向量化并存储到FAISS索引（向量ID: {start_id}-{start_id + len(chunk_data) - 1}）")
         
         return doc
     
@@ -481,6 +506,15 @@ class RAGService:
         # 向量化查询（使用与文档相同的嵌入模型）
         query_embedding = self.embed_text(query.strip())
         if query_embedding is None:
+            return []
+        
+        # 向量索引为空时直接返回，避免 FAISS 的 assert k > 0 报错
+        if self.vector_index.ntotal == 0:
+            return []
+        
+        # 检查维度是否匹配（旧索引可能由不同嵌入模型创建）
+        if self.vector_index.d != query_embedding.shape[0]:
+            print(f"⚠ 向量维度不匹配：索引 {self.vector_index.d} vs 查询 {query_embedding.shape[0]}，跳过向量检索")
             return []
         
         # 搜索向量索引（使用L2距离，后续转换为余弦相似度）
@@ -748,6 +782,52 @@ class RAGService:
             # 重建BM25索引
             if self.use_hybrid_search and BM25_AVAILABLE:
                 self._build_bm25_index(db)
+    
+    def rebuild_chunks_for_documents_without_chunks(self, db: Session) -> int:
+        """
+        为没有 chunks 的文档重建 chunks（向量化失败时仍创建 chunks 供 BM25 检索）
+        返回处理的文档数量
+        """
+        SYNTHETIC_OFFSET = 1000000
+        docs = db.query(KnowledgeDocument).filter(
+            KnowledgeDocument.active == True,
+            KnowledgeDocument.content.isnot(None),
+            KnowledgeDocument.content != ""
+        ).all()
+        count = 0
+        for doc in docs:
+            chunk_count = db.query(KnowledgeChunk).filter(KnowledgeChunk.document_id == doc.id).count()
+            if chunk_count > 0:
+                continue
+            try:
+                chunk_data = self.chunk_text(doc.content)
+                if not chunk_data:
+                    continue
+                for i, chunk_info in enumerate(chunk_data):
+                    synthetic_id = SYNTHETIC_OFFSET + doc.id * 10000 + i
+                    chunk_record = KnowledgeChunk(
+                        document_id=doc.id,
+                        chunk_index=i,
+                        content=chunk_info["content"],
+                        chunk_metadata=json.dumps({
+                            "title": chunk_info.get("title"),
+                            "type": chunk_info.get("type", "paragraph"),
+                            "chunk_index": chunk_info.get("chunk_index", i)
+                        }, ensure_ascii=False),
+                        vector_id=synthetic_id
+                    )
+                    db.add(chunk_record)
+                doc.chunk_count = len(chunk_data)
+                count += 1
+                print(f"  → 已为文档 #{doc.id}《{doc.title}》重建 {len(chunk_data)} 个 chunks")
+            except Exception as e:
+                print(f"⚠ 文档 #{doc.id} 重建 chunks 失败: {e}")
+        if count > 0:
+            db.commit()
+            if self.use_hybrid_search and BM25_AVAILABLE:
+                self._build_bm25_index(db)
+            print(f"✓ 已为 {count} 个文档重建 chunks")
+        return count
 
 
 # 全局 RAG 服务实例
