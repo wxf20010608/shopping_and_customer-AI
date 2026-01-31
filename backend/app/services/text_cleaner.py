@@ -73,8 +73,13 @@ class TextCleaner:
             text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
         
         # 去除特殊字符和乱码（保留中文、英文、数字、基本标点、换行）
+<<<<<<< HEAD
+        # 保留的字符：中文、英文、数字、基本标点、连字符（用于 3-5、7-10 等范围）、换行、制表符
+        text = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9\s.,!?;:()（）【】《》「」『』、。，！？；：\n\t\-]', '', text)
+=======
         # 保留的字符：中文、英文、数字、基本标点、换行、制表符
         text = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9\s.,!?;:()（）【】《》「」『』、。，！？；：\n\t]', '', text)
+>>>>>>> small_shopping_version1.0.0
         
         # 去除首尾空白
         text = text.strip()
@@ -311,13 +316,69 @@ class TextCleaner:
         
         return min(score, 1.0)
     
+<<<<<<< HEAD
+    def _try_faq_split(self, text: str) -> Optional[List[str]]:
+        """
+        尝试按 FAQ 格式分块（问/答、Q/A、编号问题等）
+        适用于"常见问题"类文档，每个问答单独成块便于精准检索
+        
+        支持格式示例：
+        - 9. Q: 问题 A: 回答
+        - 问：xxx 答：xxx
+        - 一、问：xxx 答：xxx
+        """
+        if not text or len(text) < 100:
+            return None
+        
+        # 优先按「数字. Q:」或「数字. 」分段（如 9. Q: ... 10. Q: ...），每段为完整 Q&A
+        numbered_qa = re.split(r'(?m)^\s*(\d+[.．、]\s+)', text)
+        if len(numbered_qa) >= 3:  # 至少有 1 个编号 + 2 段内容
+            segments = []
+            for i in range(1, len(numbered_qa), 2):
+                prefix = numbered_qa[i] if i < len(numbered_qa) else ""
+                content = numbered_qa[i + 1] if i + 1 < len(numbered_qa) else ""
+                seg = (prefix + content).strip()
+                if seg and len(seg) >= self.min_chunk_length:
+                    segments.append(seg)
+            if len(segments) >= 3:
+                return segments
+        
+        # 备选：按 问/答、Q/A、中文序号 分段
+        faq_pattern = re.compile(
+            r'(?m)^\s*((?:问|Q|问题)\d*[：:]\s*|(?:答|A|回答)[：:]\s*|'
+            r'[一二三四五六七八九十]+[、．.]\s*)',
+            re.IGNORECASE
+        )
+        parts = faq_pattern.split(text)
+        segments = []
+        i = 1
+        while i < len(parts):
+            prefix = parts[i] if i < len(parts) else ""
+            content = parts[i + 1] if i + 1 < len(parts) else ""
+            if prefix.strip() and content.strip():
+                segments.append((prefix + content).strip())
+            elif content.strip():
+                segments.append(content.strip())
+            i += 2
+        if len(segments) >= 3:
+            return [s for s in segments if s and len(s) >= self.min_chunk_length]
+        return None
+    
+=======
+>>>>>>> small_shopping_version1.0.0
     def chunk_text_optimized(self, text: str, chunk_size: Optional[int] = None, 
                             overlap: Optional[int] = None) -> List[Dict[str, any]]:
         """
         (4) 分块优化
+<<<<<<< HEAD
+        - FAQ 文档：按问答对分块，提高检索精准度
+        - 一般文档：按语义边界分块（段落、章节）
+        - 重叠分块避免信息割裂
+=======
         - 按语义边界分块（段落、章节）
         - 重叠分块避免信息割裂
         - 控制分块大小（通常128-512 tokens，这里用字符数近似）
+>>>>>>> small_shopping_version1.0.0
         """
         if not text:
             return []
@@ -325,6 +386,48 @@ class TextCleaner:
         chunk_size = chunk_size or self.chunk_size
         overlap = overlap or self.chunk_overlap
         
+<<<<<<< HEAD
+        # 优先尝试 FAQ 分块（常见问题类文档）
+        faq_segments = self._try_faq_split(text)
+        if faq_segments:
+            chunks = []
+            current = ""
+            for seg in faq_segments:
+                seg = seg.strip()
+                if not seg or len(seg) < self.min_chunk_length:
+                    continue
+                # 单个问答过长则单独成块，否则可合并相邻小段
+                if len(seg) > chunk_size:
+                    if current:
+                        chunks.append({"content": current.strip(), "type": "faq"})
+                        current = ""
+                    chunks.append({"content": seg[:self.max_chunk_length], "type": "faq"})
+                elif len(current) + len(seg) + 2 <= chunk_size:
+                    current = (current + "\n\n" + seg) if current else seg
+                else:
+                    if current:
+                        chunks.append({"content": current.strip(), "type": "faq"})
+                    current = seg
+            if current:
+                chunks.append({"content": current.strip(), "type": "faq"})
+            # 应用最小长度过滤并添加 chunk_index
+            final = []
+            for i, c in enumerate(chunks):
+                content = c["content"].strip()
+                if len(content) >= self.min_chunk_length:
+                    content = self.normalize_text(content)
+                    if content:
+                        final.append({
+                            "content": content[:self.max_chunk_length],
+                            "type": "faq",
+                            "chunk_index": len(final)
+                        })
+            if final:
+                return final
+            # 若 FAQ 分块过滤后为空，继续下面的通用分块
+        
+=======
+>>>>>>> small_shopping_version1.0.0
         # 首先进行结构化处理
         structured = self.extract_structure(text)
         text = structured["text"]
